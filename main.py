@@ -1,13 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
 import logging
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-
-from operations import get_partidos_ganados_por_local, calcular_tabla_puntos, agregar_partido, eliminar_partido, \
-    actualizar_partido
+from operations import get_partidos_ganados_por_local, calcular_tabla_puntos, agregar_partido, eliminar_partido, actualizar_partido
 from data_base import get_db, Base, engine
 from models import Partido
 from schemas import PartidoSchema
@@ -15,36 +13,22 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 
-# Crear las tablas
 Base.metadata.create_all(bind=engine)
 
-# Inicializar FastAPI
 app = FastAPI()
 
-# Configurar rutas para archivos estáticos y plantillas
+# Montar carpeta static para CSS, JS, imágenes etc.
 app.mount("/static", StaticFiles(directory="static"), name="static")
+# Templates para HTML con Jinja2
 templates = Jinja2Templates(directory="templates")
 
-# Rutas del frontend
-@app.get("/casino", response_class=HTMLResponse)
-async def casino(request: Request):
+# Ruta principal que sirve el frontend
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+# --- API ENDPOINTS ---
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
-# Configurar logging
-logging.basicConfig(level=logging.DEBUG)
-
-# Endpoints de la API
 @app.get("/partidos", response_model=List[PartidoSchema])
 def get_partidos(db: Session = Depends(get_db)):
     try:
@@ -63,7 +47,6 @@ def get_partidos(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
-
 @app.get("/verificar_partidos")
 def verificar_partidos(db: Session = Depends(get_db)):
     try:
@@ -74,16 +57,15 @@ def verificar_partidos(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al verificar los partidos: {str(e)}")
 
-
 @app.get("/ganados-local", response_model=List[PartidoSchema])
 def ganados_local(db: Session = Depends(get_db)):
     return get_partidos_ganados_por_local(db)
-
 
 @app.get("/predecir/")
 def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     try:
         partidos = db.query(Partido).all()
+
         if not partidos:
             raise HTTPException(status_code=404, detail="No hay datos suficientes para el entrenamiento.")
 
@@ -125,28 +107,26 @@ def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al predecir el resultado: {str(e)}")
 
-
 @app.get("/tabla")
 def tabla_liga(db: Session = Depends(get_db)):
-    return calcular_tabla_puntos(db)
-
+    try:
+        return calcular_tabla_puntos(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 @app.post("/partidos/")
 def agregar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int,
                              resultado: str, db: Session = Depends(get_db)):
     return agregar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
 
-
 @app.delete("/partidos/")
 def eliminar_partido_endpoint(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     return eliminar_partido(db, equipo_local, equipo_visitante)
 
-
 @app.put("/partidos/")
 def actualizar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int,
-                                resultado: str, db: Session = Depends(get_db)):
+                               resultado: str, db: Session = Depends(get_db)):
     return actualizar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
-
 
 @app.get("/partido")
 def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
@@ -167,5 +147,3 @@ def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(
     except Exception as e:
         logging.error("Error al obtener el partido: %s", str(e))
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-
-

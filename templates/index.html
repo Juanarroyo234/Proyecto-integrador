@@ -1,33 +1,63 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estadísticas de Fútbol</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <meta charset="UTF-8">
+  <title>Estadísticas Futbol - Estilo Casino</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>🏆 Casino Stats Futboleras</h1>
-    </header>
+    <h1>🎰 Liga Casino Futbolera 🎰</h1>
 
-    <main>
-      <section class="stats">
-        <h2>Estadísticas del Equipo</h2>
-        <!-- Aquí irán tus datos dinámicos -->
-        <div class="card">
-          <h3>Equipo: Atlético Nacional</h3>
-          <p>Victorias: 12</p>
-          <p>Empates: 6</p>
-          <p>Derrotas: 4</p>
-        </div>
-      </section>
-    </main>
+    <nav>
+      <button onclick="cargarPartidos()">📋 Ver Partidos</button>
+      <button onclick="cargarTabla()">📊 Ver Tabla</button>
+      <button onclick="predecir()">🔮 Predecir Resultado</button>
+    </nav>
 
-    <footer>
-      <p>© 2025 Stats Casino. Todos los derechos reservados.</p>
-    </footer>
+    <section id="output"></section>
+
+    <section id="predictor">
+      <h2>🔮 Predicción de Resultado</h2>
+      <input type="text" id="local" placeholder="Equipo Local">
+      <input type="text" id="visita" placeholder="Equipo Visitante">
+      <button onclick="enviarPrediccion()">Predecir</button>
+    </section>
   </div>
+
+  <script>
+    async function cargarPartidos() {
+      const res = await fetch('/partidos');
+      const data = await res.json();
+      let html = '<h2>📋 Partidos Registrados</h2><ul>';
+      data.forEach(p => {
+        html += `<li>${p.equipo_local} ${p.goles_local} - ${p.goles_visitante} ${p.equipo_visitante} (${p.resultado})</li>`;
+      });
+      html += '</ul>';
+      document.getElementById('output').innerHTML = html;
+    }
+
+    async function cargarTabla() {
+      const res = await fetch('/tabla');
+      const data = await res.json();
+      let html = '<h2>📊 Tabla de Posiciones</h2><table><tr><th>Equipo</th><th>Puntos</th></tr>';
+      data.forEach(e => {
+        html += `<tr><td>${e.equipo}</td><td>${e.puntos}</td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('output').innerHTML = html;
+    }
+
+    async function enviarPrediccion() {
+      const local = document.getElementById("local").value;
+      const visita = document.getElementById("visita").value;
+      const res = await fetch(`/predecir/?equipo_local=${local}&equipo_visitante=${visita}`);
+      const data = await res.json();
+      document.getElementById("output").innerHTML = `
+        <h2>Resultado:</h2>
+        <p>${local} vs ${visita} → <strong>${data.prediccion}</strong></p>
+      `;
+    }
+  </script>
 </body>
 </html>

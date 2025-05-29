@@ -1,41 +1,67 @@
 body {
-  background: radial-gradient(circle at top, #1b1b1b, #000);
-  color: #ffd700;
   font-family: 'Trebuchet MS', sans-serif;
+  background: #111;
+  color: #FFD700;
   margin: 0;
-  padding: 0;
+  padding: 20px;
 }
 
 .container {
   max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-header h1 {
-  text-align: center;
-  font-size: 3rem;
-  text-shadow: 0 0 10px #ff0, 0 0 20px #f00;
-  margin-bottom: 30px;
-}
-
-.stats {
+  margin: auto;
   background: #222;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 15px #ff0;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #FFD700;
 }
 
-.card {
-  background: #333;
-  padding: 15px;
-  margin-top: 10px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px #f00;
-}
-
-footer {
-  margin-top: 50px;
+h1 {
   text-align: center;
-  color: #888;
+  color: #FF4500;
+}
+
+nav {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+nav button {
+  background-color: #FFD700;
+  border: none;
+  color: #111;
+  padding: 10px 20px;
+  margin: 5px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background-color: #FF4500;
+  color: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #FFD700;
+  padding: 10px;
+  text-align: center;
+}
+
+#predictor {
+  margin-top: 30px;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 5px;
+  border: 1px solid #FFD700;
+  background: #333;
+  color: white;
 }
