@@ -1,7 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List
 import logging
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+
 from operations import get_partidos_ganados_por_local, calcular_tabla_puntos, agregar_partido, eliminar_partido, \
     actualizar_partido
 from data_base import get_db, Base, engine
@@ -11,9 +15,20 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 
+# Crear las tablas
 Base.metadata.create_all(bind=engine)
 
+# Inicializar FastAPI
 app = FastAPI()
+
+# Configurar rutas para archivos estáticos y plantillas
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+# Rutas del frontend
+@app.get("/casino", response_class=HTMLResponse)
+async def casino(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/")
@@ -26,9 +41,10 @@ async def say_hello(name: str):
     return {"message": f"Hello {name}"}
 
 
+# Configurar logging
 logging.basicConfig(level=logging.DEBUG)
 
-
+# Endpoints de la API
 @app.get("/partidos", response_model=List[PartidoSchema])
 def get_partidos(db: Session = Depends(get_db)):
     try:
@@ -67,13 +83,10 @@ def ganados_local(db: Session = Depends(get_db)):
 @app.get("/predecir/")
 def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     try:
-        # Leer los datos de la base de datos
         partidos = db.query(Partido).all()
-
         if not partidos:
             raise HTTPException(status_code=404, detail="No hay datos suficientes para el entrenamiento.")
 
-        # Convertir a DataFrame
         data = {
             "equipo_local": [p.equipo_local for p in partidos],
             "equipo_visitante": [p.equipo_visitante for p in partidos],
@@ -81,7 +94,6 @@ def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get
         }
         df = pd.DataFrame(data)
 
-        # Codificación
         le = LabelEncoder()
         todos_equipos = pd.concat([df["equipo_local"], df["equipo_visitante"]])
         le.fit(todos_equipos)
@@ -89,19 +101,16 @@ def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get
         df["equipo_local_encoded"] = le.transform(df["equipo_local"])
         df["equipo_visitante_encoded"] = le.transform(df["equipo_visitante"])
 
-        # Entrenamiento del modelo
         X = df[["equipo_local_encoded", "equipo_visitante_encoded"]]
         y = df["resultado"]
 
         modelo = RandomForestClassifier()
         modelo.fit(X, y)
 
-        # Validación de equipos
         equipos_disponibles = set(le.classes_)
         if equipo_local not in equipos_disponibles or equipo_visitante not in equipos_disponibles:
             return {"error": "Uno o ambos equipos no están en el dataset original."}
 
-        # Predicción
         local_encoded = le.transform([equipo_local])[0]
         visita_encoded = le.transform([equipo_visitante])[0]
         X_nuevo = [[local_encoded, visita_encoded]]
@@ -158,4 +167,5 @@ def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(
     except Exception as e:
         logging.error("Error al obtener el partido: %s", str(e))
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 
