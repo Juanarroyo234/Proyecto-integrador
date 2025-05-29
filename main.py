@@ -5,7 +5,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
 import logging
-from operations import get_partidos_ganados_por_local, calcular_tabla_puntos, agregar_partido, eliminar_partido, actualizar_partido
+from operations import get_partidos_ganados_por_local, calcular_tabla_puntos, agregar_partido, eliminar_partido, \
+    actualizar_partido
 from data_base import get_db, Base, engine
 from models import Partido
 from schemas import PartidoSchema
@@ -17,58 +18,48 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Montar carpeta static para CSS, JS, imágenes etc.
+# Montar carpeta static para css/js
 app.mount("/static", StaticFiles(directory="static"), name="static")
-# Templates para HTML con Jinja2
+
+# Templates para HTML
 templates = Jinja2Templates(directory="templates")
 
-# Ruta principal que sirve el frontend
+logging.basicConfig(level=logging.DEBUG)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-# --- API ENDPOINTS ---
 
-@app.get("/partidos", response_model=List[PartidoSchema])
-def get_partidos(db: Session = Depends(get_db)):
+@app.get("/equipos")
+def get_equipos(db: Session = Depends(get_db)):
     try:
         partidos = db.query(Partido).all()
         if not partidos:
-            raise HTTPException(status_code=404, detail="No hay partidos disponibles")
+            return {"equipos": []}
 
-        for partido in partidos:
-            if partido.goles_local is None:
-                partido.goles_local = 0
-            if partido.goles_visitante is None:
-                partido.goles_visitante = 0
+        equipos_local = set(p.equipo_local for p in partidos)
+        equipos_visita = set(p.equipo_visitante for p in partidos)
+        equipos = sorted(list(equipos_local.union(equipos_visita)))
 
-        return partidos
-
+        return {"equipos": equipos}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener equipos: {str(e)}")
 
-@app.get("/verificar_partidos")
-def verificar_partidos(db: Session = Depends(get_db)):
-    try:
-        partidos = db.query(Partido).all()
-        if not partidos:
-            raise HTTPException(status_code=404, detail="No hay partidos en PostgreSQL")
-        return {"message": f"Hay {len(partidos)} partidos en la base de datos"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al verificar los partidos: {str(e)}")
-
-@app.get("/ganados-local", response_model=List[PartidoSchema])
-def ganados_local(db: Session = Depends(get_db)):
-    return get_partidos_ganados_por_local(db)
 
 @app.get("/predecir/")
 def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     try:
+        # Solo abrir sesión y consultar aquí, cerrar antes de entrenamiento
         partidos = db.query(Partido).all()
-
         if not partidos:
             raise HTTPException(status_code=404, detail="No hay datos suficientes para el entrenamiento.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al consultar partidos: {str(e)}")
 
+    try:
+        # Entrenamiento en memoria sin DB abierta
         data = {
             "equipo_local": [p.equipo_local for p in partidos],
             "equipo_visitante": [p.equipo_visitante for p in partidos],
@@ -107,26 +98,63 @@ def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al predecir el resultado: {str(e)}")
 
-@app.get("/tabla")
-def tabla_liga(db: Session = Depends(get_db)):
+
+@app.get("/partidos", response_model=List[PartidoSchema])
+def get_partidos(db: Session = Depends(get_db)):
     try:
-        return calcular_tabla_puntos(db)
+        partidos = db.query(Partido).all()
+        if not partidos:
+            raise HTTPException(status_code=404, detail="No hay partidos disponibles")
+
+        for partido in partidos:
+            if partido.goles_local is None:
+                partido.goles_local = 0
+            if partido.goles_visitante is None:
+                partido.goles_visitante = 0
+
+        return partidos
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
+
+@app.get("/verificar_partidos")
+def verificar_partidos(db: Session = Depends(get_db)):
+    try:
+        partidos = db.query(Partido).all()
+        if not partidos:
+            raise HTTPException(status_code=404, detail="No hay partidos en PostgreSQL")
+        return {"message": f"Hay {len(partidos)} partidos en la base de datos"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al verificar los partidos: {str(e)}")
+
+
+@app.get("/ganados-local", response_model=List[PartidoSchema])
+def ganados_local(db: Session = Depends(get_db)):
+    return get_partidos_ganados_por_local(db)
+
+
+@app.get("/tabla")
+def tabla_liga(db: Session = Depends(get_db)):
+    return calcular_tabla_puntos(db)
+
 
 @app.post("/partidos/")
 def agregar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int,
                              resultado: str, db: Session = Depends(get_db)):
     return agregar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
 
+
 @app.delete("/partidos/")
 def eliminar_partido_endpoint(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     return eliminar_partido(db, equipo_local, equipo_visitante)
 
+
 @app.put("/partidos/")
 def actualizar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int,
-                               resultado: str, db: Session = Depends(get_db)):
+                                resultado: str, db: Session = Depends(get_db)):
     return actualizar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
+
 
 @app.get("/partido")
 def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):

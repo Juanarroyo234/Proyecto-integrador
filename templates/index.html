@@ -1,63 +1,82 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Estadísticas Futbol - Estilo Casino</title>
-  <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Predicción de Partidos - Estilo Casino</title>
+    <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>🎰 Liga Casino Futbolera 🎰</h1>
+    <div class="container">
+        <h1>Predicción de Partidos de Fútbol</h1>
 
-    <nav>
-      <button onclick="cargarPartidos()">📋 Ver Partidos</button>
-      <button onclick="cargarTabla()">📊 Ver Tabla</button>
-      <button onclick="predecir()">🔮 Predecir Resultado</button>
-    </nav>
+        <div class="form-group">
+            <label for="equipo_local">Equipo Local:</label>
+            <select id="equipo_local"></select>
+        </div>
 
-    <section id="output"></section>
+        <div class="form-group">
+            <label for="equipo_visitante">Equipo Visitante:</label>
+            <select id="equipo_visitante"></select>
+        </div>
 
-    <section id="predictor">
-      <h2>🔮 Predicción de Resultado</h2>
-      <input type="text" id="local" placeholder="Equipo Local">
-      <input type="text" id="visita" placeholder="Equipo Visitante">
-      <button onclick="enviarPrediccion()">Predecir</button>
-    </section>
-  </div>
+        <button onclick="hacerPrediccion()">Predecir Resultado</button>
 
-  <script>
-    async function cargarPartidos() {
-      const res = await fetch('/partidos');
-      const data = await res.json();
-      let html = '<h2>📋 Partidos Registrados</h2><ul>';
-      data.forEach(p => {
-        html += `<li>${p.equipo_local} ${p.goles_local} - ${p.goles_visitante} ${p.equipo_visitante} (${p.resultado})</li>`;
-      });
-      html += '</ul>';
-      document.getElementById('output').innerHTML = html;
+        <div id="resultado" class="resultado"></div>
+    </div>
+
+    <script>
+    async function cargarEquipos() {
+        try {
+            const res = await fetch('/equipos');
+            const data = await res.json();
+            const equipos = data.equipos;
+
+            const localSelect = document.getElementById('equipo_local');
+            const visitaSelect = document.getElementById('equipo_visitante');
+
+            localSelect.innerHTML = "";
+            visitaSelect.innerHTML = "";
+
+            equipos.forEach(equipo => {
+                const optionLocal = document.createElement('option');
+                optionLocal.value = equipo;
+                optionLocal.text = equipo;
+                localSelect.appendChild(optionLocal);
+
+                const optionVisita = document.createElement('option');
+                optionVisita.value = equipo;
+                optionVisita.text = equipo;
+                visitaSelect.appendChild(optionVisita);
+            });
+        } catch (error) {
+            console.error("Error al cargar equipos:", error);
+        }
     }
 
-    async function cargarTabla() {
-      const res = await fetch('/tabla');
-      const data = await res.json();
-      let html = '<h2>📊 Tabla de Posiciones</h2><table><tr><th>Equipo</th><th>Puntos</th></tr>';
-      data.forEach(e => {
-        html += `<tr><td>${e.equipo}</td><td>${e.puntos}</td></tr>`;
-      });
-      html += '</table>';
-      document.getElementById('output').innerHTML = html;
+    async function hacerPrediccion() {
+        const equipo_local = document.getElementById('equipo_local').value;
+        const equipo_visitante = document.getElementById('equipo_visitante').value;
+
+        const resultadoDiv = document.getElementById('resultado');
+        resultadoDiv.textContent = "Cargando predicción...";
+
+        try {
+            const res = await fetch(`/predecir/?equipo_local=${encodeURIComponent(equipo_local)}&equipo_visitante=${encodeURIComponent(equipo_visitante)}`);
+            const data = await res.json();
+
+            if(data.error){
+                resultadoDiv.textContent = data.error;
+            } else {
+                resultadoDiv.textContent = `Predicción: ${data.prediccion} para el partido ${data.equipo_local} vs ${data.equipo_visitante}`;
+            }
+        } catch (error) {
+            resultadoDiv.textContent = "Error al obtener la predicción.";
+            console.error(error);
+        }
     }
 
-    async function enviarPrediccion() {
-      const local = document.getElementById("local").value;
-      const visita = document.getElementById("visita").value;
-      const res = await fetch(`/predecir/?equipo_local=${local}&equipo_visitante=${visita}`);
-      const data = await res.json();
-      document.getElementById("output").innerHTML = `
-        <h2>Resultado:</h2>
-        <p>${local} vs ${visita} → <strong>${data.prediccion}</strong></p>
-      `;
-    }
-  </script>
+    window.onload = cargarEquipos;
+    </script>
 </body>
 </html>
