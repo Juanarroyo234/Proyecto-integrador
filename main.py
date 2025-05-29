@@ -5,33 +5,42 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
 import logging
-from operations import get_partidos_ganados_por_local, calcular_tabla_puntos, agregar_partido, eliminar_partido, \
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+
+from operations import (
+    get_partidos_ganados_por_local,
+    calcular_tabla_puntos,
+    agregar_partido,
+    eliminar_partido,
     actualizar_partido
+)
 from data_base import get_db, Base, engine
 from models import Partido
 from schemas import PartidoSchema
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
-import pandas as pd
 
-Base.metadata.create_all(bind=engine)
-
+# Inicializar app FastAPI
 app = FastAPI()
 
-# Montar carpeta static para css/js
+# Montar carpeta estática para CSS, JS, escudos
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Templates para HTML
+# Configurar templates Jinja2
 templates = Jinja2Templates(directory="templates")
 
-logging.basicConfig(level=logging.DEBUG)
+# Crear las tablas en la base de datos si no existen
+Base.metadata.create_all(bind=engine)
 
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
 
+# Página principal
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
+# Obtener todos los equipos disponibles
 @app.get("/equipos")
 def get_equipos(db: Session = Depends(get_db)):
     try:
@@ -42,24 +51,18 @@ def get_equipos(db: Session = Depends(get_db)):
         equipos_local = set(p.equipo_local for p in partidos)
         equipos_visita = set(p.equipo_visitante for p in partidos)
         equipos = sorted(list(equipos_local.union(equipos_visita)))
-
         return {"equipos": equipos}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener equipos: {str(e)}")
 
-
+# Endpoint para predecir resultados
 @app.get("/predecir/")
 def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     try:
-        # Solo abrir sesión y consultar aquí, cerrar antes de entrenamiento
         partidos = db.query(Partido).all()
         if not partidos:
             raise HTTPException(status_code=404, detail="No hay datos suficientes para el entrenamiento.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al consultar partidos: {str(e)}")
 
-    try:
-        # Entrenamiento en memoria sin DB abierta
         data = {
             "equipo_local": [p.equipo_local for p in partidos],
             "equipo_visitante": [p.equipo_visitante for p in partidos],
@@ -86,7 +89,8 @@ def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get
 
         local_encoded = le.transform([equipo_local])[0]
         visita_encoded = le.transform([equipo_visitante])[0]
-        X_nuevo = [[local_encoded, visita_encoded]]
+        X_nuevo = pd.DataFrame([[local_encoded, visita_encoded]], columns=["equipo_local_encoded", "equipo_visitante_encoded"])
+
         prediccion = modelo.predict(X_nuevo)[0]
 
         return {
@@ -98,7 +102,7 @@ def predecir(equipo_local: str, equipo_visitante: str, db: Session = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al predecir el resultado: {str(e)}")
 
-
+# Obtener todos los partidos
 @app.get("/partidos", response_model=List[PartidoSchema])
 def get_partidos(db: Session = Depends(get_db)):
     try:
@@ -113,11 +117,10 @@ def get_partidos(db: Session = Depends(get_db)):
                 partido.goles_visitante = 0
 
         return partidos
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
-
+# Verificar cuántos partidos hay en la base
 @app.get("/verificar_partidos")
 def verificar_partidos(db: Session = Depends(get_db)):
     try:
@@ -128,50 +131,43 @@ def verificar_partidos(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al verificar los partidos: {str(e)}")
 
-
+# Obtener partidos ganados por locales
 @app.get("/ganados-local", response_model=List[PartidoSchema])
 def ganados_local(db: Session = Depends(get_db)):
     return get_partidos_ganados_por_local(db)
 
-
+# Calcular tabla de puntos
 @app.get("/tabla")
 def tabla_liga(db: Session = Depends(get_db)):
     return calcular_tabla_puntos(db)
 
-
+# Agregar nuevo partido
 @app.post("/partidos/")
-def agregar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int,
-                             resultado: str, db: Session = Depends(get_db)):
+def agregar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int, resultado: str, db: Session = Depends(get_db)):
     return agregar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
 
-
+# Eliminar partido
 @app.delete("/partidos/")
 def eliminar_partido_endpoint(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     return eliminar_partido(db, equipo_local, equipo_visitante)
 
-
+# Actualizar partido
 @app.put("/partidos/")
-def actualizar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int,
-                                resultado: str, db: Session = Depends(get_db)):
+def actualizar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int, resultado: str, db: Session = Depends(get_db)):
     return actualizar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
 
-
+# Consultar un solo partido
 @app.get("/partido")
 def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
     try:
-        logging.debug("Iniciando consulta para partido: %s vs %s", equipo_local, equipo_visitante)
         partido = db.query(Partido).filter_by(
             equipo_local=equipo_local,
             equipo_visitante=equipo_visitante
         ).first()
 
         if not partido:
-            logging.warning("No se encontró el partido: %s vs %s", equipo_local, equipo_visitante)
             raise HTTPException(status_code=404, detail="Partido no encontrado")
 
-        logging.debug("Partido encontrado: %s vs %s", equipo_local, equipo_visitante)
         return partido
-
     except Exception as e:
-        logging.error("Error al obtener el partido: %s", str(e))
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")

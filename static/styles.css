@@ -66,3 +66,59 @@ button:hover {
     font-weight: bold;
     color: #66fcf1;
 }
+
+/* Estilo para la tabla de posiciones */
+.tabla-posiciones {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: 'Arial', sans-serif;
+    background: #1f2833;
+    color: #c5c6c7;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 15px #45a29e;
+}
+
+.tabla-posiciones th, .tabla-posiciones td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+}
+
+.tabla-posiciones th {
+    background-color: #45a29e;
+    color: #0b0c10;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.tabla-posiciones tbody tr:hover {
+    background-color: #333;
+    cursor: pointer;
+}
+
+/* Contenedor que oculta y muestra la tabla */
+#contenedor-tabla {
+    margin-top: 20px;
+    display: none; /* oculto por defecto */
+}
+
+/* Botón con estilo casino */
+#btn-mostrar-tabla {
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: linear-gradient(45deg, #45a29e, #66fcf1);
+    border: none;
+    border-radius: 6px;
+    color: #0b0c10;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px #66fcf1;
+    transition: background 0.3s ease;
+}
+
+#btn-mostrar-tabla:hover {
+    background: linear-gradient(45deg, #66fcf1, #45a29e);
+}
