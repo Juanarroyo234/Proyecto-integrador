@@ -1,243 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Predicción de Partidos - Estilo Casino</title>
-    <link rel="stylesheet" href="/static/styles.css" />
-    <style>
-        /* Estilos básicos para pestañas */
-        .tabs {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        .tabs button {
-            background-color: #1f2833;
-            border: none;
-            padding: 10px 20px;
-            color: #66fcf1;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .tabs button.active,
-        .tabs button:hover {
-            background-color: #45a29e;
-            color: #0b0c10;
-        }
-        /* Tabla con estilo casino */
-        #tabla-posiciones {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            color: #c5c6c7;
-        }
-        #tabla-posiciones th, #tabla-posiciones td {
-            border: 1px solid #45a29e;
-            padding: 8px;
-            text-align: center;
-        }
-        #tabla-posiciones th {
-            background-color: #45a29e;
-            color: #0b0c10;
-        }
-        #tabla-posiciones tbody tr:nth-child(even) {
-            background-color: #1f2833;
-        }
-        #tabla-posiciones tbody tr:hover {
-            background-color: #66fcf1;
-            color: #0b0c10;
-        }
-        #tabla-posiciones img {
-            height: 30px;
-            vertical-align: middle;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Predicción de Partidos</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #0077b6;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Predicción de Partidos de Fútbol</h1>
+  <header>
+    <h1>Predicción de Partidos</h1>
+    <nav>
+      <button type="button" onclick="mostrarPestana('prediccion')">Predicción</button>
+      <button type="button" onclick="mostrarPestana('tabla')">Tabla de Posiciones</button>
+    </nav>
+  </header>
 
-        <div class="tabs">
-            <button id="tab-prediccion" class="active" onclick="mostrarPestana('prediccion')">Predicción</button>
-            <button id="tab-tabla" onclick="mostrarPestana('tabla')">Mostrar Tabla</button>
-        </div>
+  <main>
+    <!-- SECCIÓN DE PREDICCIÓN -->
+    <section id="prediccion" style="display: block;">
+      <h2>Predicción de Resultado</h2>
 
-        <!-- Contenedor predicción -->
-        <div id="prediccion">
-            <div class="form-group">
-                <label for="equipo_local">Equipo Local:</label>
-                <select id="equipo_local" onchange="actualizarEscudo('equipo_local', 'escudo_local')"></select>
-                <img id="escudo_local" src="" alt="Escudo Local" style="height: 60px; display: none; margin-top: 10px;" />
-            </div>
+      <div class="form-group">
+        <label for="equipo_local">Equipo Local:</label>
+        <select id="equipo_local" onchange="actualizarEscudo('equipo_local', 'escudo_local')"></select>
+        <img id="escudo_local" alt="Escudo Local" class="escudo" style="display:none;" />
+      </div>
 
-            <div class="form-group">
-                <label for="equipo_visitante">Equipo Visitante:</label>
-                <select id="equipo_visitante" onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')"></select>
-                <img id="escudo_visitante" src="" alt="Escudo Visitante" style="height: 60px; display: none; margin-top: 10px;" />
-            </div>
+      <div class="form-group">
+        <label for="equipo_visitante">Equipo Visitante:</label>
+        <select id="equipo_visitante" onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')"></select>
+        <img id="escudo_visitante" alt="Escudo Visitante" class="escudo" style="display:none;" />
+      </div>
 
-            <button onclick="hacerPrediccion()">Predecir Resultado</button>
+      <button type="button" onclick="hacerPrediccion()">Predecir Resultado</button>
+      <div id="resultado" style="margin-top: 15px; font-weight: bold;"></div>
+    </section>
 
-            <div id="resultado" class="resultado"></div>
-        </div>
+    <!-- SECCIÓN DE TABLA DE POSICIONES -->
+    <section id="tabla" style="display: none;">
+      <h2>Tabla de Posiciones</h2>
+      <div id="contenedor-tabla">Cargando tabla...</div>
+    </section>
+  </main>
 
-        <!-- Contenedor para la tabla -->
-        <div id="tabla" class="tabla-container" style="display:none; margin-top: 20px;">
-            <h2>Tabla de Posiciones</h2>
-            <table id="tabla-posiciones">
-                <thead>
-                    <tr>
-                        <th>Posición</th>
-                        <th>Escudo</th>
-                        <th>Equipo</th>
-                        <th>PJ</th>
-                        <th>G</th>
-                        <th>E</th>
-                        <th>P</th>
-                        <th>PTS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Filas se cargarán dinámicamente -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+  <footer style="text-align:center; padding:10px; font-size:0.9em; color:#555;">
+    &copy; 2025 Tu Proyecto de Predicción Deportiva
+  </footer>
 
-    <!-- Scripts -->
-    <script src="/static/js/escudos.js"></script>
-    <script src="/static/js/main.js"></script>
-    <script>
-        // Función para mostrar/ocultar pestañas
-        function mostrarPestana(pestana) {
-            const prediccionDiv = document.getElementById('prediccion');
-            const tablaDiv = document.getElementById('tabla');
-            const tabPrediccionBtn = document.getElementById('tab-prediccion');
-            const tabTablaBtn = document.getElementById('tab-tabla');
-
-            if (pestana === 'prediccion') {
-                prediccionDiv.style.display = 'block';
-                tablaDiv.style.display = 'none';
-                tabPrediccionBtn.classList.add('active');
-                tabTablaBtn.classList.remove('active');
-            } else {
-                prediccionDiv.style.display = 'none';
-                tablaDiv.style.display = 'block';
-                tabPrediccionBtn.classList.remove('active');
-                tabTablaBtn.classList.add('active');
-                cargarTabla(); // Carga la tabla cuando se muestra la pestaña
-            }
-        }
-
-        // Cargar equipos en los selects
-        async function cargarEquipos() {
-            try {
-                const res = await fetch('/equipos');
-                if (!res.ok) throw new Error('Error al cargar equipos');
-                const data = await res.json();
-
-                // Supongo que data es un array de strings con nombres de equipos o un objeto con propiedad equipos
-                const equipos = Array.isArray(data) ? data : data.equipos;
-
-                const selectLocal = document.getElementById('equipo_local');
-                const selectVisitante = document.getElementById('equipo_visitante');
-
-                selectLocal.innerHTML = '<option value="" disabled selected>Selecciona equipo local</option>';
-                selectVisitante.innerHTML = '<option value="" disabled selected>Selecciona equipo visitante</option>';
-
-                equipos.forEach(equipo => {
-                    const optionLocal = document.createElement('option');
-                    optionLocal.value = equipo;
-                    optionLocal.textContent = equipo;
-
-                    const optionVisitante = document.createElement('option');
-                    optionVisitante.value = equipo;
-                    optionVisitante.textContent = equipo;
-
-                    selectLocal.appendChild(optionLocal);
-                    selectVisitante.appendChild(optionVisitante);
-                });
-
-                // Mostrar escudos iniciales si hay selección
-                actualizarEscudo('equipo_local', 'escudo_local');
-                actualizarEscudo('equipo_visitante', 'escudo_visitante');
-            } catch (error) {
-                console.error('Error cargando equipos:', error);
-            }
-        }
-
-        // Función para cargar la tabla desde backend y pintar en el tbody
-        async function cargarTabla() {
-            try {
-                const res = await fetch('/tabla');
-                if (!res.ok) throw new Error('Error al cargar la tabla');
-                const data = await res.json();
-
-                const tbody = document.querySelector('#tabla-posiciones tbody');
-                tbody.innerHTML = '';
-
-                data.forEach((equipo, index) => {
-                    const tr = document.createElement('tr');
-
-                    // Crear columna posición
-                    const tdPos = document.createElement('td');
-                    tdPos.textContent = index + 1;
-                    tr.appendChild(tdPos);
-
-                    // Columna escudo con imagen (ajusta el path en escudos.js para obtener la url)
-                    const tdEscudo = document.createElement('td');
-                    const img = document.createElement('img');
-                    img.src = obtenerUrlEscudo(equipo.equipo); // Función que tienes en escudos.js
-                    img.alt = `Escudo ${equipo.equipo}`;
-                    tdEscudo.appendChild(img);
-                    tr.appendChild(tdEscudo);
-
-                    // Columna nombre equipo
-                    const tdEquipo = document.createElement('td');
-                    tdEquipo.textContent = equipo.equipo;
-                    tr.appendChild(tdEquipo);
-
-                    // Partidos jugados
-                    const tdPJ = document.createElement('td');
-                    tdPJ.textContent = equipo.partidos_jugados;
-                    tr.appendChild(tdPJ);
-
-                    // Ganados
-                    const tdG = document.createElement('td');
-                    tdG.textContent = equipo.ganados;
-                    tr.appendChild(tdG);
-
-                    // Empatados
-                    const tdE = document.createElement('td');
-                    tdE.textContent = equipo.empatados;
-                    tr.appendChild(tdE);
-
-                    // Perdidos
-                    const tdP = document.createElement('td');
-                    tdP.textContent = equipo.perdidos;
-                    tr.appendChild(tdP);
-
-                    // Puntos
-                    const tdPTS = document.createElement('td');
-                    tdPTS.textContent = equipo.puntos;
-                    tr.appendChild(tdPTS);
-
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error('Error cargando tabla:', error);
-            }
-        }
-
-        // Al cargar la página, mostrar predicción y cargar equipos
-        window.onload = () => {
-            mostrarPestana('prediccion');
-            cargarEquipos();
-        };
-    </script>
+  <script src="/static/js/escudos.js"></script>
+  <script src="/static/js/main.js"></script>
 </body>
 </html>

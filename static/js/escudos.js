@@ -16,17 +16,28 @@ const escudos = {
     "Ajax": "/static/escudos/ajax.png"
 };
 
-// Función para actualizar el escudo
+document.addEventListener("DOMContentLoaded", () => {
+    const selectLocal = document.getElementById("equipo_local");
+    const selectVisitante = document.getElementById("equipo_visitante");
+
+    Object.keys(escudos).forEach(equipo => {
+        const option1 = new Option(equipo, equipo);
+        const option2 = new Option(equipo, equipo);
+        selectLocal.appendChild(option1);
+        selectVisitante.appendChild(option2);
+    });
+});
+
 function actualizarEscudo(selectId, imgId) {
-    const equipoSeleccionado = document.getElementById(selectId).value;
-    const imgElement = document.getElementById(imgId);
-    if (escudos[equipoSeleccionado]) {
-        imgElement.src = escudos[equipoSeleccionado];
-        imgElement.alt = equipoSeleccionado;
-        imgElement.style.display = 'inline'; // por si estaba oculto
+    const equipo = document.getElementById(selectId).value;
+    const img = document.getElementById(imgId);
+    if (escudos[equipo]) {
+        img.src = escudos[equipo];
+        img.style.display = 'inline';
+        img.alt = equipo;
     } else {
-        imgElement.src = "";
-        imgElement.alt = "";
-        imgElement.style.display = 'none';
+        img.style.display = 'none';
+        img.src = '';
+        img.alt = '';
     }
 }
