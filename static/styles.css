@@ -85,3 +85,10 @@ th {
 .visible {
   display: block !important;
 }
+
+.escudo-tabla {
+  height: 20px;
+  width: auto;
+  margin-right: 6px;
+  vertical-align: middle;
+}

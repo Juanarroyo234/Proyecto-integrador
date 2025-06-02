@@ -105,10 +105,16 @@ function crearTablaHTML(data) {
   `;
 
   data.forEach((equipo, index) => {
+    const nombreEquipo = equipo.equipo;
+    const escudoSrc = escudos[nombreEquipo] || "";
+
     html += `
       <tr>
         <td>${index + 1}</td>
-        <td>${equipo.equipo}</td>
+        <td>
+          ${escudoSrc ? `<img src="${escudoSrc}" class="escudo-tabla" alt="${nombreEquipo}" />` : ""}
+          ${nombreEquipo}
+        </td>
         <td>${equipo.puntos}</td>
       </tr>
     `;
@@ -117,6 +123,7 @@ function crearTablaHTML(data) {
   html += "</tbody></table>";
   return html;
 }
+
 
 // PARTIDOS
 async function cargarPartidos(filtroLocal = '', filtroVisitante = '') {
