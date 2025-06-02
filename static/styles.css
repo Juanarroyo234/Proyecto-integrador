@@ -47,13 +47,10 @@ main {
 }
 
 .escudo {
-  .escudo {
   height: 40px;
   width: auto;
   display: none;
   margin-top: 10px;
-}
-
 }
 
 .pestana-activa {
@@ -78,4 +75,13 @@ th, td {
 th {
   background-color: #0077b6;
   color: white;
+}
+
+/* Clases opcionales para control de visibilidad */
+.oculto {
+  display: none !important;
+}
+
+.visible {
+  display: block !important;
 }

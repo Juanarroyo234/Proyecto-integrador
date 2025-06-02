@@ -5,23 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Predicción de Partidos</title>
   <link rel="stylesheet" href="/static/styles.css" />
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      background-color: #fff;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #0077b6;
-      color: white;
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -29,6 +12,9 @@
     <nav>
       <button type="button" onclick="mostrarPestana('prediccion')">Predicción</button>
       <button type="button" onclick="mostrarPestana('tabla')">Tabla de Posiciones</button>
+      <button type="button" onclick="mostrarPestana('partidos')">Partidos</button>
+      <button type="button" onclick="mostrarPestana('ganadosLocal')">Ganados Local</button>
+      <button type="button" onclick="mostrarPestana('agregarPartido')">Agregar Partido</button>
     </nav>
   </header>
 
@@ -50,13 +36,60 @@
       </div>
 
       <button type="button" onclick="hacerPrediccion()">Predecir Resultado</button>
+
       <div id="resultado" style="margin-top: 15px; font-weight: bold;"></div>
     </section>
 
     <!-- SECCIÓN DE TABLA DE POSICIONES -->
     <section id="tabla" style="display: none;">
       <h2>Tabla de Posiciones</h2>
-      <div id="contenedor-tabla">Cargando tabla...</div>
+      <div id="contenedor-tabla"></div>
+    </section>
+
+    <!-- SECCIÓN DE PARTIDOS -->
+    <section id="partidos" style="display: none;">
+      <h2>Historial de Partidos</h2>
+      <div id="contenedor-partidos"></div>
+    </section>
+
+    <!-- SECCIÓN DE PARTIDOS GANADOS POR LOCAL -->
+    <section id="ganadosLocal" style="display: none;">
+      <h2>Partidos Ganados por el Equipo Local</h2>
+      <div id="contenedor-ganadosLocal"></div>
+    </section>
+
+    <!-- SECCIÓN PARA AGREGAR PARTIDO -->
+    <section id="agregarPartido" style="display: none;">
+      <h2>Agregar Nuevo Partido</h2>
+      <form id="form-partido">
+        <div class="form-group">
+          <label for="equipo_local_input">Equipo Local:</label>
+          <input type="text" id="equipo_local_input" placeholder="Nombre del equipo local" required />
+        </div>
+        <div class="form-group">
+          <label for="equipo_visitante_input">Equipo Visitante:</label>
+          <input type="text" id="equipo_visitante_input" placeholder="Nombre del equipo visitante" required />
+        </div>
+        <div class="form-group">
+          <label for="goles_local_input">Goles Local:</label>
+          <input type="number" id="goles_local_input" min="0" required />
+        </div>
+        <div class="form-group">
+          <label for="goles_visitante_input">Goles Visitante:</label>
+          <input type="number" id="goles_visitante_input" min="0" required />
+        </div>
+        <div class="form-group">
+          <label for="resultado_input">Resultado:</label>
+          <select id="resultado_input" required>
+            <option value="">-- Seleccione resultado --</option>
+            <option value="Local">Victoria Local</option>
+            <option value="Visitante">Victoria Visitante</option>
+            <option value="Empate">Empate</option>
+          </select>
+        </div>
+        <button type="submit">Agregar Partido</button>
+      </form>
+      <div id="mensaje-partido" style="margin-top: 15px; font-weight: bold;"></div>
     </section>
   </main>
 
@@ -64,7 +97,58 @@
     &copy; 2025 Tu Proyecto de Predicción Deportiva
   </footer>
 
+  <!-- Tus scripts originales -->
   <script src="/static/js/escudos.js"></script>
   <script src="/static/js/main.js"></script>
+
+  <script>
+    // Función para mostrar pestañas (ya la tenías)
+    function mostrarPestana(id) {
+      const secciones = ['prediccion', 'tabla', 'partidos', 'ganadosLocal', 'agregarPartido'];
+      secciones.forEach(sec => {
+        document.getElementById(sec).style.display = (sec === id) ? 'block' : 'none';
+      });
+    }
+
+    // Agrego la lógica para manejar el formulario "Agregar Partido"
+    const formPartido = document.getElementById('form-partido');
+    const mensajePartido = document.getElementById('mensaje-partido');
+
+    formPartido.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        equipo_local: document.getElementById('equipo_local_input').value.trim(),
+        equipo_visitante: document.getElementById('equipo_visitante_input').value.trim(),
+        goles_local: Number(document.getElementById('goles_local_input').value),
+        goles_visitante: Number(document.getElementById('goles_visitante_input').value),
+        resultado: document.getElementById('resultado_input').value
+      };
+
+      try {
+        const response = await fetch('/agregar_partido', { // Ajusta esta URL a tu backend real
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+
+        const res = await response.json();
+
+        if (res.success) {
+          mensajePartido.style.color = 'green';
+          mensajePartido.textContent = 'Partido agregado exitosamente.';
+          formPartido.reset();
+        } else {
+          mensajePartido.style.color = 'red';
+          mensajePartido.textContent = 'Error: ' + (res.message || 'Error desconocido');
+        }
+      } catch (error) {
+        mensajePartido.style.color = 'red';
+        mensajePartido.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
 </body>
 </html>

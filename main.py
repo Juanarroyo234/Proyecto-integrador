@@ -23,6 +23,9 @@ from schemas import PartidoSchema
 # Inicializar app FastAPI
 app = FastAPI()
 
+
+
+
 # Montar carpeta estática para CSS, JS, escudos
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -171,3 +174,33 @@ def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(
         return partido
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+@app.get("/tabla-posiciones", response_class=HTMLResponse)
+async def tabla_posiciones(request: Request):
+    # Simulamos una tabla (reemplaza esto con tus datos reales desde DB)
+    tabla_html = """
+    <table>
+      <thead>
+        <tr>
+          <th>Equipo</th>
+          <th>Partidos</th>
+          <th>Ganados</th>
+          <th>Puntos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Millonarios</td>
+          <td>10</td>
+          <td>7</td>
+          <td>21</td>
+        </tr>
+        <tr>
+          <td>Atlético Nacional</td>
+          <td>10</td>
+          <td>6</td>
+          <td>18</td>
+        </tr>
+      </tbody>
+    </table>
+    """
+    return HTMLResponse(content=tabla_html)
