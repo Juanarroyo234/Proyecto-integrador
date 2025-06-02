@@ -56,30 +56,24 @@ async function cargarEquipos() {
 }
 
 async function hacerPrediccion() {
-  const local = document.getElementById('equipo_local').value;
-  const visitante = document.getElementById('equipo_visitante').value;
-  const resultadoDiv = document.getElementById('resultado');
-
-  if (!local || !visitante) {
-    resultadoDiv.textContent = "Por favor selecciona ambos equipos.";
-    return;
-  }
+  const equipoLocal = document.getElementById("equipo_local").value;
+  const equipoVisitante = document.getElementById("equipo_visitante").value;
 
   try {
-    const res = await fetch(`/predecir?equipo_local=${encodeURIComponent(local)}&equipo_visitante=${encodeURIComponent(visitante)}`);
-    if (!res.ok) throw new Error("Error en la predicción");
-    const data = await res.json();
+    const respuesta = await fetch(`/predecir?equipo_local=${encodeURIComponent(equipoLocal)}&equipo_visitante=${encodeURIComponent(equipoVisitante)}`);
 
-    if (data.error) {
-      resultadoDiv.textContent = data.error;
+    if (respuesta.ok) {
+      const resultado = await respuesta.json();
+      document.getElementById("resultado").innerText = `Resultado: ${resultado.prediccion}`;
     } else {
-      resultadoDiv.textContent = `Predicción: ${data.equipo_local} vs ${data.equipo_visitante} → Resultado: ${data.prediccion}`;
+      const error = await respuesta.json();
+      document.getElementById("resultado").innerText = `Error: ${error.detail || "No se pudo predecir."}`;
     }
   } catch (error) {
-    resultadoDiv.textContent = "Error al obtener la predicción.";
-    console.error(error);
+    document.getElementById("resultado").innerText = `Error al predecir: ${error}`;
   }
 }
+
 
 async function cargarTabla() {
   const contenedor = document.getElementById('contenedor-tabla');
