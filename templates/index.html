@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Estadísticas de Fútbol</title>
+  <link rel="stylesheet" href="/static/css/estilos.css" />
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #161b22;
+      padding: 1rem;
+      border-bottom: 1px solid #30363d;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #58a6ff;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0;
+      display: flex;
+      gap: 1rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #c9d1d9;
+      padding: 0.5rem 1rem;
+      background-color: #21262d;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+
+    nav a:hover {
+      background-color: #30363d;
+    }
+
+    main {
+      padding: 2rem;
+    }
+
+    section {
+      margin-bottom: 3rem;
+      background-color: #161b22;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(88, 166, 255, 0.1);
+    }
+
+    h2 {
+      color: #58a6ff;
+      margin-top: 0;
+    }
+
+    form label, form select, form button {
+      display: block;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    select, button {
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: none;
+      background-color: #21262d;
+      color: #e6edf3;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #238636;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2ea043;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #0d1117;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #30363d;
+      text-align: center;
+    }
+
+    th {
+      background-color: #21262d;
+      color: #58a6ff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #161b22;
+      color: #8b949e;
+      border-top: 1px solid #30363d;
+    }
+
+    ul li strong {
+      color: #58a6ff;
+    }
+
+    #resultado-prediccion,
+    #mensaje-tabla,
+    #contenedor-estadisticas,
+    #resultados-partidos {
+      margin-top: 1rem;
+    }
+
+    #resultado-prediccion {
+      color: #58a6ff;
+    }
+
+    ::selection {
+      background-color: #238636;
+      color: #ffffff;
+    }
+
+    input, textarea {
+      background-color: #21262d;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+      border-radius: 5px;
+      padding: 0.5rem;
+      width: 100%;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Estadísticas de Fútbol</h1>
+    <nav>
+      <ul>
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#prediccion">Predicción</a></li>
+        <li><a href="#tabla">Tabla de Posiciones</a></li>
+        <li><a href="#partidos">Partidos</a></li>
+        <li><a href="#estadisticas">Estadísticas</a></li>
+        <li><a href="#administrar">Administrar</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Sección de Inicio -->
+    <section id="inicio">
+      <h2>Bienvenido</h2>
+      <p>Consulta estadísticas, predicciones y administra partidos.</p>
+    </section>
+
+    <!-- Sección Predicción -->
+    <section id="prediccion">
+      <h2>Predicción de Resultados</h2>
+
+      <form id="form-prediccion">
+        <label for="equipo_local">Equipo Local:</label>
+        <select name="equipo_local" id="equipo_local" required></select>
+
+        <label for="equipo_visitante">Equipo Visitante:</label>
+        <select name="equipo_visitante" id="equipo_visitante" required></select>
+
+        <button type="submit">Predecir</button>
+      </form>
+
+      <div id="resultado-prediccion" style="margin-top: 20px; font-weight: bold;"></div>
+
+      <script>
+        async function cargarEquipos() {
+          try {
+            const respuesta = await fetch('/equipos');
+            const data = await respuesta.json();
+            const equipos = data.equipos || [];
+
+            const localSelect = document.getElementById('equipo_local');
+            const visitanteSelect = document.getElementById('equipo_visitante');
+
+            equipos.forEach(equipo => {
+              const opcion1 = new Option(equipo, equipo);
+              const opcion2 = new Option(equipo, equipo);
+              localSelect.add(opcion1);
+              visitanteSelect.add(opcion2);
+            });
+          } catch (error) {
+            console.error('Error al cargar equipos:', error);
+          }
+        }
+
+        document.getElementById('form-prediccion').addEventListener('submit', async (event) => {
+          event.preventDefault();
+
+          const local = document.getElementById('equipo_local').value;
+          const visitante = document.getElementById('equipo_visitante').value;
+
+          if (local === visitante) {
+            document.getElementById('resultado-prediccion').innerText = "Selecciona equipos diferentes.";
+            return;
+          }
+
+          try {
+            const respuesta = await fetch(`/predecir?equipo_local=${encodeURIComponent(local)}&equipo_visitante=${encodeURIComponent(visitante)}`);
+            const resultado = await respuesta.text();
+            document.getElementById('resultado-prediccion').innerText = "Predicción: " + resultado;
+          } catch (error) {
+            document.getElementById('resultado-prediccion').innerText = "Error al obtener la predicción.";
+            console.error(error);
+          }
+        });
+
+        cargarEquipos();
+      </script>
+    </section>
+
+    <!-- Sección Tabla de Posiciones -->
+    <section id="tabla">
+      <h2>Tabla de Posiciones</h2>
+      <table id="tabla-posiciones">
+        <thead>
+          <tr>
+            <th>Posición</th>
+            <th>Equipo</th>
+            <th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas dinámicas aquí -->
+        </tbody>
+      </table>
+      <div id="mensaje-tabla"></div>
+    </section>
+
+    <!-- Sección Partidos -->
+    <section id="partidos">
+      <h2>Listado de Partidos</h2>
+
+      <form id="form-filtrar-partidos">
+        <label for="equipo_filtro">Selecciona un equipo:</label>
+        <select id="equipo_filtro" required></select>
+        <button type="submit">Filtrar</button>
+      </form>
+
+      <div id="resultados-partidos"></div>
+
+      <script>
+        async function cargarEquiposFiltro() {
+          try {
+            const respuesta = await fetch('/equipos');
+            const data = await respuesta.json();
+            const equipos = data.equipos || [];
+
+            const select = document.getElementById('equipo_filtro');
+            equipos.forEach(equipo => {
+              const opcion = new Option(equipo, equipo);
+              select.add(opcion);
+            });
+          } catch (error) {
+            console.error('Error al cargar equipos para filtro:', error);
+          }
+        }
+
+        document.getElementById('form-filtrar-partidos').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const equipo = document.getElementById('equipo_filtro').value;
+          const resultadosDiv = document.getElementById('resultados-partidos');
+          resultadosDiv.innerHTML = 'Cargando...';
+
+          try {
+            const respuesta = await fetch(`/partidos/filtrar?equipo=${encodeURIComponent(equipo)}`);
+            const partidos = await respuesta.json();
+
+            if (partidos.length === 0) {
+              resultadosDiv.innerHTML = 'No se encontraron partidos para ese equipo.';
+              return;
+            }
+
+            let html = `<table>
+              <thead>
+                <tr>
+                  <th>Equipo Local</th>
+                  <th>Goles Local</th>
+                  <th>Equipo Visitante</th>
+                  <th>Goles Visitante</th>
+                  <th>Resultado</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+            partidos.forEach(p => {
+              html += `
+                <tr>
+                  <td>${p.equipo_local}</td>
+                  <td>${p.goles_local}</td>
+                  <td>${p.equipo_visitante}</td>
+                  <td>${p.goles_visitante}</td>
+                  <td>${p.resultado}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            resultadosDiv.innerHTML = html;
+
+          } catch (error) {
+            resultadosDiv.innerHTML = 'Error al cargar los partidos.';
+            console.error(error);
+          }
+        });
+
+        cargarEquiposFiltro();
+      </script>
+    </section>
+
+    <section id="estadisticas">
+  <h2>Estadísticas por Equipo</h2>
+
+  <form id="form-estadisticas-equipo" style="margin-bottom: 20px;">
+    <label for="equipo_estadisticas">Selecciona un equipo:</label>
+    <select id="equipo_estadisticas" required></select>
+    <button type="submit">Consultar</button>
+  </form>
+
+  <div id="contenedor-estadisticas" style="margin-top: 20px;"></div>
+
+  <script>
+    async function cargarEquiposEstadisticas() {
+      try {
+        const respuesta = await fetch('/equipos');
+        const data = await respuesta.json();
+        const equipos = data.equipos || [];
+
+        const select = document.getElementById('equipo_estadisticas');
+        equipos.forEach(equipo => {
+          const opcion = new Option(equipo, equipo);
+          select.add(opcion);
+        });
+      } catch (error) {
+        console.error('Error al cargar equipos para estadísticas:', error);
+      }
+    }
+
+    document.getElementById('form-estadisticas-equipo').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const equipo = document.getElementById('equipo_estadisticas').value;
+      const contenedor = document.getElementById('contenedor-estadisticas');
+      contenedor.innerHTML = 'Cargando...';
+
+      try {
+        const respuesta = await fetch(`/estadisticas/${encodeURIComponent(equipo)}`);
+        const data = await respuesta.json();
+
+        if (!data || Object.keys(data).length === 0) {
+          contenedor.innerHTML = 'No hay estadísticas disponibles para este equipo.';
+          return;
+        }
+
+        let html = '<ul style="list-style-type: none; padding: 0;">';
+        for (const [clave, valor] of Object.entries(data)) {
+          html += `<li><strong>${clave.replace(/_/g, ' ')}:</strong> ${valor}</li>`;
+        }
+        html += '</ul>';
+        contenedor.innerHTML = html;
+      } catch (error) {
+        console.error('Error al consultar estadísticas:', error);
+        contenedor.innerHTML = 'Error al cargar estadísticas del equipo.';
+      }
+    });
+
+    cargarEquiposEstadisticas();
+  </script>
+</section>
+
+
+    <!-- Sección Administrar -->
+    <section id="administrar">
+      <h2>Administrar Partidos</h2>
+      <!-- Aquí estarán los formularios de agregar, actualizar y eliminar -->
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 - Proyecto de Fútbol</p>
+  </footer>
+
+  <script>
+    async function cargarTablaPosiciones() {
+      try {
+        const respuesta = await fetch('/tabla');
+        if (!respuesta.ok) throw new Error('Error en la respuesta del servidor');
+
+        const tabla = await respuesta.json();
+        const tbody = document.querySelector('#tabla-posiciones tbody');
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(tabla) || tabla.length === 0) {
+          document.getElementById('mensaje-tabla').innerText = 'No hay datos para mostrar.';
+          return;
+        } else {
+          document.getElementById('mensaje-tabla').innerText = '';
+        }
+
+        tabla.forEach((equipo, index) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${equipo.equipo}</td>
+            <td>${equipo.puntos}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Error al cargar tabla:', error);
+        document.getElementById('mensaje-tabla').innerText = 'Error al cargar tabla de posiciones.';
+      }
+    }
+
+    cargarTablaPosiciones();
+  </script>
+</body>
+</html>
