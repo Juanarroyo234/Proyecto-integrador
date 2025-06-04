@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Depends, HTTPException, Request, Query
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ import logging
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
+from collections import defaultdict
 
 from operations import (
     get_partidos_ganados_por_local,
@@ -174,79 +175,89 @@ def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(
         return partido
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-@app.get("/tabla_posiciones", response_class=HTMLResponse)
-async def tabla_posiciones(request: Request):
-    tabla_html = """
-    <table id="tabla-posiciones">
-      <thead>
-        <tr>
-          <th>Equipo</th>
-          <th>Partidos</th>
-          <th>Ganados</th>
-          <th>Puntos</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><a href="#" class="equipo-link">Millonarios</a></td>
-          <td>10</td>
-          <td>7</td>
-          <td>21</td>
-        </tr>
-        <tr>
-          <td><a href="#" class="equipo-link">Atlético Nacional</a></td>
-          <td>10</td>
-          <td>6</td>
-          <td>18</td>
-        </tr>
-      </tbody>
-    </table>
-    <div id="estadisticas"></div>
-    <script>
-      document.querySelectorAll(".equipo-link").forEach(link => {
-        link.addEventListener("click", async function(event) {
-          event.preventDefault();
-          const nombreEquipo = this.textContent;
+@app.get("/tabla_posiciones")
+def tabla_posiciones_json(db: Session = Depends(get_db)):
+    partidos = db.query(Partido).all()
+    if not partidos:
+        raise HTTPException(status_code=404, detail="No hay partidos en la base de datos")
 
-          try {
-            const res = await fetch(`/estadisticas_equipo/${encodeURIComponent(nombreEquipo)}`);
-            if (!res.ok) throw new Error("Error al obtener estadísticas");
-            const data = await res.json();
-            document.getElementById("estadisticas").innerHTML = `
-              <h3>Estadísticas de ${nombreEquipo}</h3>
-              <ul>
-                <li>Ganados: ${data.ganados}</li>
-                <li>Perdidos: ${data.perdidos}</li>
-                <li>Empatados: ${data.empatados}</li>
-              </ul>
-            `;
-          } catch (err) {
-            document.getElementById("estadisticas").innerText = "No se pudieron cargar las estadísticas.";
-          }
-        });
-      });
-    </script>
-    """
-    return HTMLResponse(content=tabla_html)
+    tabla = defaultdict(lambda: {"equipo": "", "jugados": 0, "ganados": 0, "empatados": 0, "perdidos": 0, "puntos": 0})
 
-@app.get("/estadisticas_equipo/{nombre}")
-def estadisticas_equipo(nombre: str, db: Session = Depends(get_db)):
+    for p in partidos:
+        local = p.equipo_local
+        visita = p.equipo_visitante
+        resultado = p.resultado
+
+        tabla[local]["equipo"] = local
+        tabla[visita]["equipo"] = visita
+
+        tabla[local]["jugados"] += 1
+        tabla[visita]["jugados"] += 1
+
+        if resultado == "L":
+            tabla[local]["ganados"] += 1
+            tabla[local]["puntos"] += 3
+            tabla[visita]["perdidos"] += 1
+        elif resultado == "V":
+            tabla[visita]["ganados"] += 1
+            tabla[visita]["puntos"] += 3
+            tabla[local]["perdidos"] += 1
+        elif resultado == "E":
+            tabla[local]["empatados"] += 1
+            tabla[visita]["empatados"] += 1
+            tabla[local]["puntos"] += 1
+            tabla[visita]["puntos"] += 1
+
+    # Convertir a lista y ordenar por puntos descendente
+    tabla_ordenada = sorted(tabla.values(), key=lambda x: x["puntos"], reverse=True)
+
+    return JSONResponse(content=tabla_ordenada)
+
+@app.get("/estadisticas/{nombre}")
+def estadisticas(nombre: str, db: Session = Depends(get_db)):
     partidos = db.query(Partido).filter(
         (Partido.equipo_local == nombre) | (Partido.equipo_visitante == nombre)
     ).all()
 
-    ganados = 0
-    perdidos = 0
-    empatados = 0
+    victorias = 0
+    empates = 0
+    derrotas = 0
 
-    for p in partidos:
-        if p.resultado == "E":
-            empatados += 1
-        elif (p.equipo_local == nombre and p.resultado == "L") or (p.equipo_visitante == nombre and p.resultado == "V"):
-            ganados += 1
-        elif (p.equipo_local == nombre and p.resultado == "V") or (p.equipo_visitante == nombre and p.resultado == "L"):
-            perdidos += 1
+    for partido in partidos:
+        if partido.resultado == "empate":
+            empates += 1
+        elif partido.resultado == "local":
+            if partido.equipo_local == nombre:
+                victorias += 1
+            else:
+                derrotas += 1
+        elif partido.resultado == "visitante":
+            if partido.equipo_visitante == nombre:
+                victorias += 1
+            else:
+                derrotas += 1
 
-    return {"ganados": ganados, "perdidos": perdidos, "empatados": empatados}
+    puntos = victorias * 3 + empates
 
+    return {
+        "victorias": victorias,
+        "empates": empates,
+        "derrotas": derrotas,
+        "puntos": puntos
+    }
 
+@app.get("/partidos/filtrar")
+def filtrar_partidos(equipo: str = Query(...), db: Session = Depends(get_db)):
+    partidos = db.query(Partido).filter(
+        (Partido.equipo_local == equipo) | (Partido.equipo_visitante == equipo)
+    ).all()
+    # Serializar la respuesta, por ejemplo:
+    return [
+        {
+            "equipo_local": p.equipo_local,
+            "equipo_visitante": p.equipo_visitante,
+            "goles_local": p.goles_local,
+            "goles_visitante": p.goles_visitante,
+            "resultado": p.resultado
+        } for p in partidos
+    ]
