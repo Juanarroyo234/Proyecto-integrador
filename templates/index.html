@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Predicción de Partidos</title>
   <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .nombre-equipo {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -44,6 +66,7 @@
     <section id="tabla" style="display: none;">
       <h2>Tabla de Posiciones</h2>
       <div id="contenedor-tabla"></div>
+      <div id="contenedor-grafico" style="margin-top: 20px;"></div>
     </section>
 
     <!-- SECCIÓN DE PARTIDOS -->
@@ -97,20 +120,25 @@
     &copy; 2025 Tu Proyecto de Predicción Deportiva
   </footer>
 
-  <!-- Tus scripts originales -->
+  <!-- Scripts originales -->
   <script src="/static/js/escudos.js"></script>
   <script src="/static/js/main.js"></script>
 
+  <!-- Script para cambiar de pestañas y cargar tabla -->
   <script>
-    // Función para mostrar pestañas (ya la tenías)
     function mostrarPestana(id) {
       const secciones = ['prediccion', 'tabla', 'partidos', 'ganadosLocal', 'agregarPartido'];
       secciones.forEach(sec => {
         document.getElementById(sec).style.display = (sec === id) ? 'block' : 'none';
       });
+      if (id === 'tabla') {
+        cargarTablaPosiciones();
+      }
     }
+  </script>
 
-    // Agrego la lógica para manejar el formulario "Agregar Partido"
+  <!-- Script para manejar el formulario "Agregar Partido" -->
+  <script>
     const formPartido = document.getElementById('form-partido');
     const mensajePartido = document.getElementById('mensaje-partido');
 
@@ -126,7 +154,7 @@
       };
 
       try {
-        const response = await fetch('/agregar_partido', { // Ajusta esta URL a tu backend real
+        const response = await fetch('/agregar_partido', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data)
@@ -147,6 +175,78 @@
       } catch (error) {
         mensajePartido.style.color = 'red';
         mensajePartido.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+
+  <!-- Script para cargar y mostrar la tabla de posiciones -->
+  <script>
+    async function cargarTablaPosiciones() {
+      try {
+        const response = await fetch('/tabla_posiciones');
+        if (!response.ok) throw new Error('No se pudo cargar la tabla');
+
+        const tabla = await response.json();
+
+        let htmlTabla = '<table><thead><tr><th>Equipo</th><th>Puntos</th><th>Jugados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th></tr></thead><tbody>';
+
+        tabla.forEach(fila => {
+          htmlTabla += `<tr>
+            <td><span class="nombre-equipo" data-nombre="${fila.equipo}">${fila.equipo}</span></td>
+            <td>${fila.puntos}</td>
+            <td>${fila.jugados}</td>
+            <td>${fila.ganados}</td>
+            <td>${fila.empatados}</td>
+            <td>${fila.perdidos}</td>
+          </tr>`;
+        });
+
+        htmlTabla += '</tbody></table>';
+        document.getElementById('contenedor-tabla').innerHTML = htmlTabla;
+      } catch (error) {
+        document.getElementById('contenedor-tabla').innerHTML = '<p>Error al cargar la tabla de posiciones.</p>';
+        console.error(error);
+      }
+    }
+
+    document.addEventListener("click", async function (e) {
+      if (e.target.classList.contains("nombre-equipo")) {
+        const equipo = e.target.dataset.nombre;
+
+        try {
+          const response = await fetch(`/estadisticas_equipo/${encodeURIComponent(equipo)}`);
+          if (!response.ok) throw new Error('No se pudo obtener las estadísticas');
+          const data = await response.json();
+
+          const contenedorGrafico = document.getElementById("contenedor-grafico");
+          contenedorGrafico.innerHTML = '<canvas id="graficoEquipo" width="400" height="200"></canvas>';
+
+          const ctx = document.getElementById("graficoEquipo").getContext("2d");
+
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Ganados', 'Perdidos', 'Empatados'],
+              datasets: [{
+                label: `Estadísticas de ${equipo}`,
+                data: [data.ganados, data.perdidos, data.empatados],
+                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        } catch (error) {
+          alert("No se pudieron cargar las estadísticas del equipo.");
+          console.error(error);
+        }
       }
     });
   </script>

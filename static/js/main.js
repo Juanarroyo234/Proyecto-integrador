@@ -2,27 +2,48 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarEquipos();
   cargarTabla();
   mostrarPestana('prediccion'); // Mostrar predicción por defecto
+
+  const btnFiltrar = document.getElementById('btn_filtrar_partidos');
+  const btnLimpiar = document.getElementById('btn_limpiar_filtro');
+
+  if (btnFiltrar) {
+    btnFiltrar.addEventListener('click', () => {
+      const filtroLocal = document.getElementById('filtro_local').value;
+      const filtroVisitante = document.getElementById('filtro_visitante').value;
+      cargarPartidos(filtroLocal, filtroVisitante);
+    });
+  }
+
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', () => {
+      document.getElementById('filtro_local').value = '';
+      document.getElementById('filtro_visitante').value = '';
+      cargarPartidos();
+    });
+  }
 });
 
+// -----------------------------------------------------------
+// Mostrar pestaña y cargar datos relacionados
 function mostrarPestana(id) {
-  document.getElementById('prediccion').style.display = id === 'prediccion' ? 'block' : 'none';
-  document.getElementById('tabla').style.display = id === 'tabla' ? 'block' : 'none';
-  document.getElementById('partidos').style.display = id === 'partidos' ? 'block' : 'none';
-  document.getElementById('ganadosLocal').style.display = id === 'ganadosLocal' ? 'block' : 'none';
-  document.getElementById('agregarPartido').style.display = id === 'agregarPartido' ? 'block' : 'none';
+  const pestañas = ['prediccion', 'tabla', 'partidos', 'ganadosLocal', 'agregarPartido'];
+  pestañas.forEach(pestana => {
+    const el = document.getElementById(pestana);
+    if (el) el.style.display = (pestana === id) ? 'block' : 'none';
+  });
 
   if (id === 'tabla') {
     cargarTabla();
   } else if (id === 'partidos') {
     cargarPartidos();
-    cargarFiltrosEquipos();  // <-- Agregado para cargar filtros al mostrar partidos
+    cargarFiltrosEquipos();
   } else if (id === 'ganadosLocal') {
     cargarGanadosLocal();
   }
 }
 
-// --- Código existente ---
-
+// -----------------------------------------------------------
+// EQUIPOS
 async function cargarEquipos() {
   try {
     const res = await fetch('/equipos');
@@ -55,6 +76,8 @@ async function cargarEquipos() {
   }
 }
 
+// -----------------------------------------------------------
+// PREDICCIÓN
 async function hacerPrediccion() {
   const equipoLocal = document.getElementById("equipo_local").value;
   const equipoVisitante = document.getElementById("equipo_visitante").value;
@@ -74,7 +97,8 @@ async function hacerPrediccion() {
   }
 }
 
-
+// -----------------------------------------------------------
+// TABLA POSICIONES
 async function cargarTabla() {
   const contenedor = document.getElementById('contenedor-tabla');
   try {
@@ -83,14 +107,38 @@ async function cargarTabla() {
 
     const data = await res.json();
     contenedor.innerHTML = crearTablaHTML(data);
+    agregarEventosClickEquipos();
   } catch (error) {
     contenedor.innerHTML = `<p>Error: ${error.message}</p>`;
     console.error("Error cargando tabla:", error);
   }
 }
 
+// Evita múltiples event listeners al reemplazar los elementos antes de añadirlos
+function agregarEventosClickEquipos() {
+  const elementos = document.querySelectorAll('.equipo-click.nombre-equipo');
+
+  elementos.forEach(elem => {
+    // Clona el nodo para eliminar listeners previos y lo reemplaza
+    const nuevoElem = elem.cloneNode(true);
+    nuevoElem.style.cursor = 'pointer';
+    elem.replaceWith(nuevoElem);
+  });
+
+  const nuevosElementos = document.querySelectorAll('.equipo-click.nombre-equipo');
+  nuevosElementos.forEach(elem => {
+    elem.addEventListener('click', () => {
+      const nombreEquipo = elem.getAttribute('data-nombre');
+      mostrarEstadisticas(nombreEquipo);
+    });
+  });
+}
+
 function crearTablaHTML(data) {
   if (!data.length) return "<p>No hay datos para mostrar</p>";
+
+  // Asegúrate de definir escudos como un objeto global, ej:
+  // const escudos = { "Equipo1": "url1", "Equipo2": "url2", ... };
 
   let html = `
     <table>
@@ -105,15 +153,14 @@ function crearTablaHTML(data) {
   `;
 
   data.forEach((equipo, index) => {
-    const nombreEquipo = equipo.equipo;
-    const escudoSrc = escudos[nombreEquipo] || "";
-
     html += `
       <tr>
         <td>${index + 1}</td>
         <td>
-          ${escudoSrc ? `<img src="${escudoSrc}" class="escudo-tabla" alt="${nombreEquipo}" />` : ""}
-          ${nombreEquipo}
+          <span class="equipo-click nombre-equipo" data-nombre="${equipo.equipo}">
+            <img src="${escudos?.[equipo.equipo] || ''}" class="escudo-tabla" alt="Escudo ${equipo.equipo}" />
+            ${equipo.equipo}
+          </span>
         </td>
         <td>${equipo.puntos}</td>
       </tr>
@@ -124,7 +171,7 @@ function crearTablaHTML(data) {
   return html;
 }
 
-
+// -----------------------------------------------------------
 // PARTIDOS
 async function cargarPartidos(filtroLocal = '', filtroVisitante = '') {
   const contenedor = document.getElementById('contenedor-partidos');
@@ -183,7 +230,8 @@ function crearPartidosHTML(data) {
   return html;
 }
 
-// GANADOS LOCAL
+// -----------------------------------------------------------
+// GANADOS COMO LOCAL
 async function cargarGanadosLocal() {
   const contenedor = document.getElementById('contenedor-ganadosLocal');
   try {
@@ -231,13 +279,31 @@ function crearTablaGanadosLocal(data) {
   return html;
 }
 
-// --- NUEVO: Formulario agregar partido ---
+// -----------------------------------------------------------
+// AGREGAR PARTIDO
 const formPartido = document.getElementById('form-partido');
 const mensajeForm = document.getElementById('mensaje_form_partido');
 
 if (formPartido) {
   formPartido.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Validación simple
+    if (!formPartido.equipo_local.value || !formPartido.equipo_visitante.value) {
+      mensajeForm.textContent = 'Seleccione ambos equipos.';
+      mensajeForm.style.color = 'red';
+      return;
+    }
+    if (formPartido.equipo_local.value === formPartido.equipo_visitante.value) {
+      mensajeForm.textContent = 'Los equipos no pueden ser iguales.';
+      mensajeForm.style.color = 'red';
+      return;
+    }
+    if (isNaN(parseInt(formPartido.goles_local.value)) || isNaN(parseInt(formPartido.goles_visitante.value))) {
+      mensajeForm.textContent = 'Ingrese goles válidos.';
+      mensajeForm.style.color = 'red';
+      return;
+    }
 
     const data = {
       equipo_local: formPartido.equipo_local.value,
@@ -246,6 +312,9 @@ if (formPartido) {
       goles_visitante: parseInt(formPartido.goles_visitante.value),
       resultado: formPartido.resultado.value,
     };
+
+    const btnEnviar = formPartido.querySelector('button[type="submit"]');
+    btnEnviar.disabled = true;
 
     try {
       const response = await fetch('/partidos/', {
@@ -262,61 +331,98 @@ if (formPartido) {
       mensajeForm.textContent = 'Partido agregado correctamente.';
       mensajeForm.style.color = 'green';
       formPartido.reset();
+
+      // Actualizar lista partidos si se está viendo esa pestaña
+      if (document.getElementById('partidos').style.display === 'block') {
+        cargarPartidos();
+      }
     } catch (error) {
-      mensajeForm.textContent = error.message;
+      mensajeForm.textContent = `Error: ${error.message}`;
       mensajeForm.style.color = 'red';
+    } finally {
+      btnEnviar.disabled = false;
     }
   });
 }
 
-// --- NUEVO: FILTROS PARA PARTIDOS ---
+// -----------------------------------------------------------
+// FILTROS para partidos
 async function cargarFiltrosEquipos() {
   try {
     const res = await fetch('/equipos');
-    if (!res.ok) throw new Error("Error al obtener equipos");
+    if (!res.ok) throw new Error("Error al obtener equipos para filtros");
     const data = await res.json();
     const equipos = data.equipos || [];
 
     const filtroLocal = document.getElementById('filtro_local');
     const filtroVisitante = document.getElementById('filtro_visitante');
-    filtroLocal.innerHTML = '<option value="">Todos</option>';
-    filtroVisitante.innerHTML = '<option value="">Todos</option>';
+    filtroLocal.innerHTML = `<option value="">--Todos--</option>`;
+    filtroVisitante.innerHTML = `<option value="">--Todos--</option>`;
 
     equipos.forEach(equipo => {
-      const optionLocal = document.createElement('option');
-      optionLocal.value = equipo;
-      optionLocal.textContent = equipo;
-      filtroLocal.appendChild(optionLocal);
-
-      const optionVisitante = document.createElement('option');
-      optionVisitante.value = equipo;
-      optionVisitante.textContent = equipo;
-      filtroVisitante.appendChild(optionVisitante);
+      filtroLocal.innerHTML += `<option value="${equipo}">${equipo}</option>`;
+      filtroVisitante.innerHTML += `<option value="${equipo}">${equipo}</option>`;
     });
   } catch (error) {
-    console.error(error);
-    alert("No se pudieron cargar los equipos para filtro.");
+    console.error("Error cargando filtros de equipos:", error);
   }
 }
 
-// Botones filtrar y limpiar filtro partidos
-document.addEventListener("DOMContentLoaded", () => {
-  const btnFiltrar = document.getElementById('btn_filtrar_partidos');
-  const btnLimpiar = document.getElementById('btn_limpiar_filtro');
+// -----------------------------------------------------------
+// Mostrar estadísticas y gráfico con Chart.js
+async function mostrarEstadisticas(equipo) {
+  const contenedor = document.getElementById('contenedor-estadisticas');
+  contenedor.innerHTML = `<h2>Estadísticas de ${equipo}</h2><canvas id="graficoEstadisticas"></canvas>`;
 
-  if (btnFiltrar) {
-    btnFiltrar.addEventListener('click', () => {
-      const filtroLocal = document.getElementById('filtro_local').value;
-      const filtroVisitante = document.getElementById('filtro_visitante').value;
-      cargarPartidos(filtroLocal, filtroVisitante);
-    });
-  }
+  try {
+    const res = await fetch(`/estadisticas/${encodeURIComponent(equipo)}`);
+    if (!res.ok) throw new Error("Error al cargar estadísticas");
 
-  if (btnLimpiar) {
-    btnLimpiar.addEventListener('click', () => {
-      document.getElementById('filtro_local').value = '';
-      document.getElementById('filtro_visitante').value = '';
-      cargarPartidos();
+    const data = await res.json();
+
+    const ctx = document.getElementById('graficoEstadisticas').getContext('2d');
+
+    // Si ya existe un gráfico, destruirlo para evitar superposición
+    if (window.graficoActual) {
+      window.graficoActual.destroy();
+    }
+
+    window.graficoActual = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Victorias', 'Empates', 'Derrotas'],
+        datasets: [{
+          label: `Resultados de ${equipo}`,
+          data: [data.victorias, data.empates, data.derrotas],
+          backgroundColor: ['#4caf50', '#ffeb3b', '#f44336'],
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, precision: 0 }
+        }
+      }
     });
+  } catch (error) {
+    contenedor.innerHTML = `<p>Error al cargar estadísticas: ${error.message}</p>`;
+    console.error(error);
   }
-});
+}
+
+// -----------------------------------------------------------
+// Actualizar escudo al cambiar selección
+function actualizarEscudo(selectId, escudoId) {
+  const select = document.getElementById(selectId);
+  const escudo = document.getElementById(escudoId);
+  if (!select || !escudo) return;
+
+  select.addEventListener('change', () => {
+    const equipoSeleccionado = select.value;
+    // Cambia la ruta del escudo, define globalmente "escudos" con URLs
+    escudo.src = escudos?.[equipoSeleccionado] || '';
+  });
+
+  // Set inicial
+  escudo.src = escudos?.[select.value] || '';
+}

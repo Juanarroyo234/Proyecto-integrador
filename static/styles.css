@@ -92,3 +92,19 @@ th {
   margin-right: 6px;
   vertical-align: middle;
 }
+.equipo-click {
+  cursor: pointer;
+  color: #0077b6;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+}
+
+.equipo-click:hover {
+  text-decoration: underline;
+}
+
+.escudo-tabla {
+  height: 20px;
+  margin-right: 5px;
+}

@@ -174,11 +174,10 @@ def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(
         return partido
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-@app.get("/tabla-posiciones", response_class=HTMLResponse)
+@app.get("/tabla_posiciones", response_class=HTMLResponse)
 async def tabla_posiciones(request: Request):
-    # Simulamos una tabla (reemplaza esto con tus datos reales desde DB)
     tabla_html = """
-    <table>
+    <table id="tabla-posiciones">
       <thead>
         <tr>
           <th>Equipo</th>
@@ -189,18 +188,65 @@ async def tabla_posiciones(request: Request):
       </thead>
       <tbody>
         <tr>
-          <td>Millonarios</td>
+          <td><a href="#" class="equipo-link">Millonarios</a></td>
           <td>10</td>
           <td>7</td>
           <td>21</td>
         </tr>
         <tr>
-          <td>Atlético Nacional</td>
+          <td><a href="#" class="equipo-link">Atlético Nacional</a></td>
           <td>10</td>
           <td>6</td>
           <td>18</td>
         </tr>
       </tbody>
     </table>
+    <div id="estadisticas"></div>
+    <script>
+      document.querySelectorAll(".equipo-link").forEach(link => {
+        link.addEventListener("click", async function(event) {
+          event.preventDefault();
+          const nombreEquipo = this.textContent;
+
+          try {
+            const res = await fetch(`/estadisticas_equipo/${encodeURIComponent(nombreEquipo)}`);
+            if (!res.ok) throw new Error("Error al obtener estadísticas");
+            const data = await res.json();
+            document.getElementById("estadisticas").innerHTML = `
+              <h3>Estadísticas de ${nombreEquipo}</h3>
+              <ul>
+                <li>Ganados: ${data.ganados}</li>
+                <li>Perdidos: ${data.perdidos}</li>
+                <li>Empatados: ${data.empatados}</li>
+              </ul>
+            `;
+          } catch (err) {
+            document.getElementById("estadisticas").innerText = "No se pudieron cargar las estadísticas.";
+          }
+        });
+      });
+    </script>
     """
     return HTMLResponse(content=tabla_html)
+
+@app.get("/estadisticas_equipo/{nombre}")
+def estadisticas_equipo(nombre: str, db: Session = Depends(get_db)):
+    partidos = db.query(Partido).filter(
+        (Partido.equipo_local == nombre) | (Partido.equipo_visitante == nombre)
+    ).all()
+
+    ganados = 0
+    perdidos = 0
+    empatados = 0
+
+    for p in partidos:
+        if p.resultado == "E":
+            empatados += 1
+        elif (p.equipo_local == nombre and p.resultado == "L") or (p.equipo_visitante == nombre and p.resultado == "V"):
+            ganados += 1
+        elif (p.equipo_local == nombre and p.resultado == "V") or (p.equipo_visitante == nombre and p.resultado == "L"):
+            perdidos += 1
+
+    return {"ganados": ganados, "perdidos": perdidos, "empatados": empatados}
+
+
