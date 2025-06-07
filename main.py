@@ -9,6 +9,11 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from collections import defaultdict
+from fastapi.responses import HTMLResponse
+import matplotlib.pyplot as plt
+import io
+import base64
+
 
 from operations import (
     get_partidos_ganados_por_local,
@@ -261,3 +266,64 @@ def filtrar_partidos(equipo: str = Query(...), db: Session = Depends(get_db)):
             "resultado": p.resultado
         } for p in partidos
     ]
+
+@app.get("/enfrentar", response_class=HTMLResponse)
+def enfrentar_equipos(equipo1: str, equipo2: str, db: Session = Depends(get_db)):
+    if equipo1 == equipo2:
+        return HTMLResponse("<p>No se puede enfrentar el mismo equipo contra sí mismo.</p>")
+
+    # Consultar partidos entre equipo1 y equipo2 desde la base de datos
+    partidos = db.query(Partido).filter(
+        ((Partido.equipo_local == equipo1) & (Partido.equipo_visitante == equipo2)) |
+        ((Partido.equipo_local == equipo2) & (Partido.equipo_visitante == equipo1))
+    ).all()
+
+    if not partidos:
+        return HTMLResponse(f"<p>No se encontraron enfrentamientos entre {equipo1} y {equipo2}.</p>")
+
+    # Construir DataFrame para facilitar manipulación
+    data = {
+        "equipo_local": [p.equipo_local for p in partidos],
+        "equipo_visitante": [p.equipo_visitante for p in partidos],
+        "goles_local": [p.goles_local for p in partidos],
+        "goles_visitante": [p.goles_visitante for p in partidos],
+    }
+    df = pd.DataFrame(data)
+
+    # Calcular resultado por partido
+    def calcular_resultado(fila):
+        if fila["goles_local"] == fila["goles_visitante"]:
+            return "Empate"
+        elif fila["goles_local"] > fila["goles_visitante"]:
+            return fila["equipo_local"]
+        else:
+            return fila["equipo_visitante"]
+
+    df["resultado"] = df.apply(calcular_resultado, axis=1)
+
+    conteo_resultados = df["resultado"].value_counts()
+
+    # Graficar resultados en pie chart
+    fig, ax = plt.subplots()
+    conteo_resultados.plot.pie(
+        autopct="%1.1f%%",
+        ax=ax,
+        startangle=90,
+        colors=["#4CAF50", "#F44336", "#FFC107"]  # Verde, rojo, amarillo, opcional
+    )
+    ax.set_ylabel("")
+    ax.set_title(f"Historial de enfrentamientos: {equipo1} vs {equipo2}")
+
+    # Convertir gráfico a imagen base64 para incrustar en HTML
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    plt.close(fig)
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+
+    html = f"""
+    <h3>Historial de enfrentamientos</h3>
+    <p>{len(df)} partidos encontrados entre <strong>{equipo1}</strong> y <strong>{equipo2}</strong>.</p>
+    <img src="data:image/png;base64,{img_base64}" alt="Gráfico de enfrentamientos">
+    """
+    return HTMLResponse(content=html)

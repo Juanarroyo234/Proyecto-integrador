@@ -161,6 +161,7 @@
         <li><a href="#partidos">Partidos</a></li>
         <li><a href="#estadisticas">Estadísticas</a></li>
         <li><a href="#administrar">Administrar</a></li>
+        <li><a href="#enfrentar">Enfrentar Equipos</a></li>
       </ul>
     </nav>
   </header>
@@ -389,6 +390,85 @@
     });
 
     cargarEquiposEstadisticas();
+  </script>
+</section>
+
+<!-- Sección Enfrentar Equipos -->
+<section id="enfrentar">
+  <h2>Enfrentar Equipos</h2>
+
+  <form id="form-enfrentar">
+    <label for="equipo1">Equipo 1:</label>
+    <select id="equipo1" required></select>
+
+    <label for="equipo2">Equipo 2:</label>
+    <select id="equipo2" required></select>
+
+    <button type="submit">Comparar</button>
+  </form>
+
+  <div id="grafica-enfrentar" style="margin-top: 2rem;">
+    <!-- Aquí se insertará la gráfica -->
+  </div>
+
+  <script>
+    async function cargarEquiposEnfrentar() {
+      try {
+        const respuesta = await fetch('/equipos');
+        const data = await respuesta.json();
+        const equipos = data.equipos || [];
+
+        const select1 = document.getElementById('equipo1');
+        const select2 = document.getElementById('equipo2');
+
+        select1.innerHTML = "";
+        select2.innerHTML = "";
+
+        if (equipos.length === 0) {
+          select1.innerHTML = '<option disabled>No hay equipos disponibles</option>';
+          select2.innerHTML = '<option disabled>No hay equipos disponibles</option>';
+          return;
+        }
+
+        equipos.forEach(equipo => {
+          const opcion1 = new Option(equipo, equipo);
+          const opcion2 = new Option(equipo, equipo);
+          select1.add(opcion1);
+          select2.add(opcion2);
+        });
+      } catch (error) {
+        console.error('Error al cargar equipos para enfrentar:', error);
+      }
+    }
+
+    document.getElementById('form-enfrentar').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const equipo1 = document.getElementById('equipo1').value;
+      const equipo2 = document.getElementById('equipo2').value;
+      const contenedor = document.getElementById('grafica-enfrentar');
+      contenedor.innerHTML = '';
+
+      if (equipo1 === equipo2) {
+        contenedor.innerText = 'Selecciona equipos diferentes.';
+        return;
+      }
+
+      contenedor.innerText = 'Cargando comparación...';
+
+      try {
+        const respuesta = await fetch(`/enfrentar?equipo1=${encodeURIComponent(equipo1)}&equipo2=${encodeURIComponent(equipo2)}`);
+        if (!respuesta.ok) {
+          throw new Error(`Error en la respuesta: ${respuesta.status}`);
+        }
+        const html = await respuesta.text();
+        contenedor.innerHTML = html;
+      } catch (error) {
+        console.error('Error al comparar equipos:', error);
+        contenedor.innerText = 'Error al obtener la comparación.';
+      }
+    });
+
+    cargarEquiposEnfrentar();
   </script>
 </section>
 
