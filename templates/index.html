@@ -174,66 +174,99 @@
     </section>
 
     <!-- Sección Predicción -->
-    <section id="prediccion">
-      <h2>Predicción de Resultados</h2>
+<section id="prediccion">
+  <h2>Predicción de Resultados</h2>
 
-      <form id="form-prediccion">
-        <label for="equipo_local">Equipo Local:</label>
-        <select name="equipo_local" id="equipo_local" required></select>
+  <form id="form-prediccion">
+    <label for="equipo_local">Equipo Local:</label>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <select name="equipo_local" id="equipo_local" required onchange="actualizarEscudo('equipo_local', 'escudo_local')"></select>
+      <img id="escudo_local" src="" alt="Escudo local" width="40" height="40">
+    </div>
 
-        <label for="equipo_visitante">Equipo Visitante:</label>
-        <select name="equipo_visitante" id="equipo_visitante" required></select>
+    <label for="equipo_visitante">Equipo Visitante:</label>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <select name="equipo_visitante" id="equipo_visitante" required onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')"></select>
+      <img id="escudo_visitante" src="" alt="Escudo visitante" width="40" height="40">
+    </div>
 
-        <button type="submit">Predecir</button>
-      </form>
+    <button type="submit">Predecir</button>
+  </form>
 
-      <div id="resultado-prediccion" style="margin-top: 20px; font-weight: bold;"></div>
+  <div id="resultado-prediccion" style="margin-top: 20px; font-weight: bold;"></div>
 
-      <script>
-        async function cargarEquipos() {
-          try {
-            const respuesta = await fetch('/equipos');
-            const data = await respuesta.json();
-            const equipos = data.equipos || [];
+  <script>
+    const CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749274506/";
 
-            const localSelect = document.getElementById('equipo_local');
-            const visitanteSelect = document.getElementById('equipo_visitante');
+    function normalizarNombre(nombre) {
+      return nombre
+        .normalize("NFD")                     // separa acentos
+        .replace(/[\u0300-\u036f]/g, "")     // elimina tildes
+        .replace(/\s/g, '')                  // elimina espacios
+        .replace(/\./g, '')                  // elimina puntos
+        .toLowerCase();
+    }
 
-            equipos.forEach(equipo => {
-              const opcion1 = new Option(equipo, equipo);
-              const opcion2 = new Option(equipo, equipo);
-              localSelect.add(opcion1);
-              visitanteSelect.add(opcion2);
-            });
-          } catch (error) {
-            console.error('Error al cargar equipos:', error);
-          }
-        }
+    function actualizarEscudo(selectId, imgId) {
+      const equipo = document.getElementById(selectId).value;
+      const nombreImagen = normalizarNombre(equipo) + ".png";
+      const img = document.getElementById(imgId);
+      img.src = `${CDN_URL_PREFIX}${nombreImagen}`;
+    }
 
-        document.getElementById('form-prediccion').addEventListener('submit', async (event) => {
-          event.preventDefault();
+    async function cargarEquipos() {
+      try {
+        const respuesta = await fetch('/equipos');
+        const data = await respuesta.json();
+        const equipos = data.equipos || [];
 
-          const local = document.getElementById('equipo_local').value;
-          const visitante = document.getElementById('equipo_visitante').value;
+        const localSelect = document.getElementById('equipo_local');
+        const visitanteSelect = document.getElementById('equipo_visitante');
 
-          if (local === visitante) {
-            document.getElementById('resultado-prediccion').innerText = "Selecciona equipos diferentes.";
-            return;
-          }
-
-          try {
-            const respuesta = await fetch(`/predecir?equipo_local=${encodeURIComponent(local)}&equipo_visitante=${encodeURIComponent(visitante)}`);
-            const resultado = await respuesta.text();
-            document.getElementById('resultado-prediccion').innerText = "Predicción: " + resultado;
-          } catch (error) {
-            document.getElementById('resultado-prediccion').innerText = "Error al obtener la predicción.";
-            console.error(error);
-          }
+        equipos.forEach((equipo, index) => {
+          const opcion1 = new Option(equipo, equipo);
+          const opcion2 = new Option(equipo, equipo);
+          localSelect.add(opcion1);
+          visitanteSelect.add(opcion2);
         });
 
-        cargarEquipos();
-      </script>
-    </section>
+        // Cargar escudos por defecto del primer equipo
+        actualizarEscudo('equipo_local', 'escudo_local');
+        actualizarEscudo('equipo_visitante', 'escudo_visitante');
+
+      } catch (error) {
+        console.error('Error al cargar equipos:', error);
+      }
+    }
+
+    document.getElementById('form-prediccion').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const local = document.getElementById('equipo_local').value;
+      const visitante = document.getElementById('equipo_visitante').value;
+
+      if (local === visitante) {
+        document.getElementById('resultado-prediccion').innerText = "Selecciona equipos diferentes.";
+        return;
+      }
+
+      try {
+        const respuesta = await fetch(`/predecir?equipo_local=${encodeURIComponent(local)}&equipo_visitante=${encodeURIComponent(visitante)}`);
+        const resultado = await respuesta.text();
+        document.getElementById('resultado-prediccion').innerText = "Predicción: " + resultado;
+      } catch (error) {
+        document.getElementById('resultado-prediccion').innerText = "Error al obtener la predicción.";
+        console.error(error);
+      }
+    });
+
+    cargarEquipos();
+  </script>
+</section>
+
+
+
+
 
     <!-- Sección Tabla de Posiciones -->
     <section id="tabla">
@@ -394,22 +427,75 @@
 </section>
 
 <!-- Sección Enfrentar Equipos -->
-<section id="enfrentar">
-  <h2>Enfrentar Equipos</h2>
+<section id="enfrentar" style="position: relative; background-image: url('/static/cancha-futbol.png'); background-size: cover; background-position: center; padding: 4rem 1rem; border-radius: 1rem; color: white; text-align: center;">
 
-  <form id="form-enfrentar">
-    <label for="equipo1">Equipo 1:</label>
-    <select id="equipo1" required></select>
+  <h2 style="margin-bottom: 2rem; font-size: 2rem;">Enfrentar Equipos</h2>
 
-    <label for="equipo2">Equipo 2:</label>
-    <select id="equipo2" required></select>
+  <form id="form-enfrentar" style="display: flex; justify-content: space-around; align-items: center; gap: 1rem; flex-wrap: wrap;">
+    <div>
+      <label for="equipo1">Equipo 1:</label><br>
+      <select id="equipo1" required></select>
+    </div>
 
-    <button type="submit">Comparar</button>
+    <div id="vs" style="font-size: 2rem; font-weight: bold;">VS</div>
+
+    <div>
+      <label for="equipo2">Equipo 2:</label><br>
+      <select id="equipo2" required></select>
+    </div>
+
+    <div style="flex-basis: 100%; text-align: center; margin-top: 1rem;">
+      <button type="submit" style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 5px; transition: transform 0.2s, box-shadow 0.3s;">Comparar</button>
+    </div>
   </form>
 
-  <div id="grafica-enfrentar" style="margin-top: 2rem;">
-    <!-- Aquí se insertará la gráfica -->
+  <div id="presentacion-equipos" style="display: flex; justify-content: space-between; margin-top: 3rem;">
+    <div id="nombre-equipo1" style="font-size: 1.5rem; font-weight: bold;"></div>
+    <div id="nombre-equipo2" style="font-size: 1.5rem; font-weight: bold;"></div>
   </div>
+
+  <div id="grafica-enfrentar" style="margin-top: 2rem;"></div>
+
+  <style>
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    .slideInLeft {
+      animation: slideInLeft 0.5s ease;
+    }
+
+    .slideInRight {
+      animation: slideInRight 0.5s ease;
+    }
+
+    #vs {
+      animation: pulse 2s infinite ease-in-out;
+      color: gold;
+      text-shadow: 0 0 5px black;
+    }
+
+    @keyframes pulse {
+      0%   { transform: scale(1); opacity: 1; }
+      50%  { transform: scale(1.1); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    button[type="submit"]:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+    }
+
+    #nombre-equipo1, #nombre-equipo2 {
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+    }
+  </style>
 
   <script>
     async function cargarEquiposEnfrentar() {
@@ -421,24 +507,39 @@
         const select1 = document.getElementById('equipo1');
         const select2 = document.getElementById('equipo2');
 
-        select1.innerHTML = "";
-        select2.innerHTML = "";
-
-        if (equipos.length === 0) {
-          select1.innerHTML = '<option disabled>No hay equipos disponibles</option>';
-          select2.innerHTML = '<option disabled>No hay equipos disponibles</option>';
-          return;
-        }
-
         equipos.forEach(equipo => {
           const opcion1 = new Option(equipo, equipo);
           const opcion2 = new Option(equipo, equipo);
           select1.add(opcion1);
           select2.add(opcion2);
         });
+
+        select1.addEventListener('change', actualizarNombresEquipos);
+        select2.addEventListener('change', actualizarNombresEquipos);
       } catch (error) {
         console.error('Error al cargar equipos para enfrentar:', error);
       }
+    }
+
+    function aplicarAnimacion(id, clase) {
+      const el = document.getElementById(id);
+      el.classList.remove(clase);
+      void el.offsetWidth; // reinicia animación
+      el.classList.add(clase);
+    }
+
+    function actualizarNombresEquipos() {
+      const equipo1 = document.getElementById('equipo1').value;
+      const equipo2 = document.getElementById('equipo2').value;
+
+      const nombre1 = document.getElementById('nombre-equipo1');
+      const nombre2 = document.getElementById('nombre-equipo2');
+
+      nombre1.textContent = equipo1 || '';
+      nombre2.textContent = equipo2 || '';
+
+      aplicarAnimacion('nombre-equipo1', 'slideInLeft');
+      aplicarAnimacion('nombre-equipo2', 'slideInRight');
     }
 
     document.getElementById('form-enfrentar').addEventListener('submit', async (e) => {
@@ -453,13 +554,8 @@
         return;
       }
 
-      contenedor.innerText = 'Cargando comparación...';
-
       try {
         const respuesta = await fetch(`/enfrentar?equipo1=${encodeURIComponent(equipo1)}&equipo2=${encodeURIComponent(equipo2)}`);
-        if (!respuesta.ok) {
-          throw new Error(`Error en la respuesta: ${respuesta.status}`);
-        }
         const html = await respuesta.text();
         contenedor.innerHTML = html;
       } catch (error) {
@@ -472,12 +568,6 @@
   </script>
 </section>
 
-
-    <!-- Sección Administrar -->
-    <section id="administrar">
-      <h2>Administrar Partidos</h2>
-      <!-- Aquí estarán los formularios de agregar, actualizar y eliminar -->
-    </section>
   </main>
 
   <footer>
