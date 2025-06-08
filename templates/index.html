@@ -297,67 +297,91 @@
     </tbody>
   </table>
   <div id="mensaje-tabla" style="margin-top: 10px; color: red;"></div>
+
+  <script>
+    // Asegúrate que esto esté definido globalmente, si no, defínelo aquí:
+    if (!window.CDN_URL_PREFIX) {
+      window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749274506/";
+    }
+
+    function normalizarNombre(nombre) {
+      return nombre
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s/g, "")
+        .replace(/\./g, "")
+        .toLowerCase();
+    }
+
+    async function cargarTabla() {
+      try {
+        const respuesta = await fetch('/tabla');
+        if (!respuesta.ok) throw new Error('Error al obtener datos de tabla');
+        const datos = await respuesta.json();
+
+        const tbody = document.querySelector("#tabla-posiciones tbody");
+        tbody.innerHTML = "";
+
+        datos.forEach((fila, index) => {
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid #ccc";
+
+          // Posición
+          const tdPos = document.createElement("td");
+          tdPos.style.padding = "8px";
+          tdPos.textContent = index + 1;
+          tr.appendChild(tdPos);
+
+          // Equipo con escudo
+          const tdEquipo = document.createElement("td");
+          tdEquipo.style.padding = "8px";
+          tdEquipo.style.display = "flex";
+          tdEquipo.style.alignItems = "center";
+          tdEquipo.style.gap = "10px";
+
+          const img = document.createElement("img");
+
+          // Usa el nombre normalizado para la imagen
+          const nombreImg = normalizarNombre(fila.equipo) + ".png";
+
+          img.src = `${window.CDN_URL_PREFIX}${nombreImg}`;
+          img.alt = fila.equipo;
+          img.width = 30;
+          img.height = 30;
+          img.style.borderRadius = "4px";
+          img.style.objectFit = "contain";
+
+          // Fallback para cuando la imagen no carga
+          img.onerror = () => {
+            img.style.display = "none";
+            console.warn(`No se encontró la imagen para: ${nombreImg}`);
+          };
+
+          tdEquipo.appendChild(img);
+          tdEquipo.appendChild(document.createTextNode(fila.equipo));
+          tr.appendChild(tdEquipo);
+
+          // Puntos
+          const tdPuntos = document.createElement("td");
+          tdPuntos.style.padding = "8px";
+          tdPuntos.textContent = fila.puntos;
+          tr.appendChild(tdPuntos);
+
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('mensaje-tabla').textContent = "";
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById('mensaje-tabla').textContent = "No se pudo cargar la tabla.";
+      }
+    }
+
+    cargarTabla();
+  </script>
 </section>
 
-<script>
-  async function cargarTabla() {
-    try {
-      const respuesta = await fetch('/tabla');
-      if (!respuesta.ok) throw new Error('Error al obtener datos de tabla');
-      const datos = await respuesta.json();
-
-      const tbody = document.querySelector("#tabla-posiciones tbody");
-      tbody.innerHTML = "";
-
-      datos.forEach((fila, index) => {
-        const tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid #ccc";
-
-        // Posición
-        const tdPos = document.createElement("td");
-        tdPos.style.padding = "8px";
-        tdPos.textContent = index + 1;
-        tr.appendChild(tdPos);
-
-        // Equipo con escudo
-        const tdEquipo = document.createElement("td");
-        tdEquipo.style.padding = "8px";
-        tdEquipo.style.display = "flex";
-        tdEquipo.style.alignItems = "center";
-        tdEquipo.style.gap = "10px";
-
-        const img = document.createElement("img");
-        // Usa la variable global definida en window, sin redeclarar
-        img.src = `${window.CDN_URL_PREFIX}${fila.equipo_normalizado}.png`;
-        img.alt = fila.equipo;
-        img.width = 30;
-        img.height = 30;
-        img.style.borderRadius = "4px";
-        img.style.objectFit = "contain";
-
-        tdEquipo.appendChild(img);
-        tdEquipo.appendChild(document.createTextNode(fila.equipo));
-        tr.appendChild(tdEquipo);
-
-        // Puntos
-        const tdPuntos = document.createElement("td");
-        tdPuntos.style.padding = "8px";
-        tdPuntos.textContent = fila.puntos;
-        tr.appendChild(tdPuntos);
-
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('mensaje-tabla').textContent = "";
-
-    } catch (error) {
-      console.error(error);
-      document.getElementById('mensaje-tabla').textContent = "No se pudo cargar la tabla.";
-    }
-  }
-
-  cargarTabla();
-</script>
 
 
 
@@ -683,39 +707,6 @@
     <p>&copy; 2025 - Proyecto de Fútbol</p>
   </footer>
 
-  <script>
-    async function cargarTablaPosiciones() {
-      try {
-        const respuesta = await fetch('/tabla');
-        if (!respuesta.ok) throw new Error('Error en la respuesta del servidor');
 
-        const tabla = await respuesta.json();
-        const tbody = document.querySelector('#tabla-posiciones tbody');
-        tbody.innerHTML = '';
-
-        if (!Array.isArray(tabla) || tabla.length === 0) {
-          document.getElementById('mensaje-tabla').innerText = 'No hay datos para mostrar.';
-          return;
-        } else {
-          document.getElementById('mensaje-tabla').innerText = '';
-        }
-
-        tabla.forEach((equipo, index) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${equipo.equipo}</td>
-            <td>${equipo.puntos}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (error) {
-        console.error('Error al cargar tabla:', error);
-        document.getElementById('mensaje-tabla').innerText = 'Error al cargar tabla de posiciones.';
-      }
-    }
-
-    cargarTablaPosiciones();
-  </script>
 </body>
 </html>
