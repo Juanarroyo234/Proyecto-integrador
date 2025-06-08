@@ -387,97 +387,174 @@
 
 
     <!-- Sección Partidos -->
-    <section id="partidos">
-      <h2>Listado de Partidos</h2>
+  <section id="partidos">
+  <h2>Listado de Partidos</h2>
 
-      <form id="form-filtrar-partidos">
-        <label for="equipo_filtro">Selecciona un equipo:</label>
-        <select id="equipo_filtro" required></select>
-        <button type="submit">Filtrar</button>
-      </form>
+  <form id="form-filtrar-partidos" style="margin-bottom: 1rem;">
+    <label for="equipo_filtro">Selecciona un equipo:</label>
+    <select id="equipo_filtro" required style="padding-left: 40px; background-repeat: no-repeat; background-position: 5px center; background-size: 30px 30px;"></select>
+    <button type="submit" style="margin-left: 10px;">Filtrar</button>
+  </form>
 
-      <div id="resultados-partidos"></div>
+  <div id="resultados-partidos"></div>
 
-      <script>
-        async function cargarEquiposFiltro() {
-          try {
-            const respuesta = await fetch('/equipos');
-            const data = await respuesta.json();
-            const equipos = data.equipos || [];
+  <style>
+    /* Opciones personalizadas con escudos en el select */
+    #equipo_filtro option {
+      padding-left: 35px;
+      background-repeat: no-repeat;
+      background-position: 5px center;
+      background-size: 30px 30px;
+    }
+  </style>
 
-            const select = document.getElementById('equipo_filtro');
-            equipos.forEach(equipo => {
-              const opcion = new Option(equipo, equipo);
-              select.add(opcion);
-            });
-          } catch (error) {
-            console.error('Error al cargar equipos para filtro:', error);
-          }
-        }
+  <script>
+    function normalizarNombre(nombre) {
+      return nombre
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
+        .toLowerCase();
+    }
 
-        document.getElementById('form-filtrar-partidos').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const equipo = document.getElementById('equipo_filtro').value;
-          const resultadosDiv = document.getElementById('resultados-partidos');
-          resultadosDiv.innerHTML = 'Cargando...';
+    async function cargarEquiposFiltro() {
+      try {
+        const respuesta = await fetch('/equipos');
+        const data = await respuesta.json();
+        const equipos = data.equipos || [];
 
-          try {
-            const respuesta = await fetch(`/partidos/filtrar?equipo=${encodeURIComponent(equipo)}`);
-            const partidos = await respuesta.json();
+        const select = document.getElementById('equipo_filtro');
+        select.innerHTML = '';
 
-            if (partidos.length === 0) {
-              resultadosDiv.innerHTML = 'No se encontraron partidos para ese equipo.';
-              return;
-            }
-
-            let html = `<table>
-              <thead>
-                <tr>
-                  <th>Equipo Local</th>
-                  <th>Goles Local</th>
-                  <th>Equipo Visitante</th>
-                  <th>Goles Visitante</th>
-                  <th>Resultado</th>
-                </tr>
-              </thead>
-              <tbody>`;
-
-            partidos.forEach(p => {
-              html += `
-                <tr>
-                  <td>${p.equipo_local}</td>
-                  <td>${p.goles_local}</td>
-                  <td>${p.equipo_visitante}</td>
-                  <td>${p.goles_visitante}</td>
-                  <td>${p.resultado}</td>
-                </tr>`;
-            });
-
-            html += '</tbody></table>';
-            resultadosDiv.innerHTML = html;
-
-          } catch (error) {
-            resultadosDiv.innerHTML = 'Error al cargar los partidos.';
-            console.error(error);
-          }
+        equipos.forEach(equipo => {
+          const opt = new Option(equipo, equipo);
+          // Usar el normalizado para construir URL de la imagen
+          const urlEscudo = `${window.CDN_URL_PREFIX}${normalizarNombre(equipo)}.png`;
+          opt.style.backgroundImage = `url('${urlEscudo}')`;
+          select.add(opt);
         });
 
-        cargarEquiposFiltro();
-      </script>
-    </section>
+        // Actualizar el fondo del select para que muestre el escudo del seleccionado
+        function actualizarFondo() {
+          const val = select.value;
+          if (val) {
+            const url = `${window.CDN_URL_PREFIX}${normalizarNombre(val)}.png`;
+            select.style.backgroundImage = `url('${url}')`;
+          } else {
+            select.style.backgroundImage = 'none';
+          }
+        }
+        select.addEventListener('change', actualizarFondo);
+        actualizarFondo();
 
-    <section id="estadisticas">
+      } catch (error) {
+        console.error('Error al cargar equipos para filtro:', error);
+      }
+    }
+
+    document.getElementById('form-filtrar-partidos').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const equipo = document.getElementById('equipo_filtro').value;
+      const resultadosDiv = document.getElementById('resultados-partidos');
+      resultadosDiv.innerHTML = 'Cargando...';
+
+      try {
+        const respuesta = await fetch(`/partidos/filtrar?equipo=${encodeURIComponent(equipo)}`);
+        const partidos = await respuesta.json();
+
+        if (partidos.length === 0) {
+          resultadosDiv.innerHTML = 'No se encontraron partidos para ese equipo.';
+          return;
+        }
+
+        let html = `<table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #222; color: white;">
+              <th style="padding: 8px;">Equipo Local</th>
+              <th style="padding: 8px;">Goles Local</th>
+              <th style="padding: 8px;">Equipo Visitante</th>
+              <th style="padding: 8px;">Goles Visitante</th>
+              <th style="padding: 8px;">Resultado</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+        partidos.forEach(p => {
+          // Normalizar nombres para obtener URL escudo
+          const escudoLocal = `${window.CDN_URL_PREFIX}${normalizarNombre(p.equipo_local)}.png`;
+          const escudoVisitante = `${window.CDN_URL_PREFIX}${normalizarNombre(p.equipo_visitante)}.png`;
+
+          html += `
+            <tr style="border-bottom: 1px solid #ccc;">
+              <td style="padding: 8px; display: flex; align-items: center; gap: 8px;">
+                <img src="${escudoLocal}" alt="${p.equipo_local}" width="30" height="30" style="border-radius: 4px; object-fit: contain;">
+                ${p.equipo_local}
+              </td>
+              <td style="padding: 8px;">${p.goles_local}</td>
+              <td style="padding: 8px; display: flex; align-items: center; gap: 8px;">
+                <img src="${escudoVisitante}" alt="${p.equipo_visitante}" width="30" height="30" style="border-radius: 4px; object-fit: contain;">
+                ${p.equipo_visitante}
+              </td>
+              <td style="padding: 8px;">${p.goles_visitante}</td>
+              <td style="padding: 8px;">${p.resultado}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        resultadosDiv.innerHTML = html;
+
+      } catch (error) {
+        resultadosDiv.innerHTML = 'Error al cargar los partidos.';
+        console.error(error);
+      }
+    });
+
+    cargarEquiposFiltro();
+  </script>
+</section>
+
+
+  <section id="estadisticas">
   <h2>Estadísticas por Equipo</h2>
 
   <form id="form-estadisticas-equipo" style="margin-bottom: 20px;">
     <label for="equipo_estadisticas">Selecciona un equipo:</label>
-    <select id="equipo_estadisticas" required></select>
+    <select id="equipo_estadisticas" required
+      style="padding-left: 40px; background-repeat: no-repeat; background-position: 5px center; background-size: 30px 30px;"></select>
     <button type="submit">Consultar</button>
   </form>
 
   <div id="contenedor-estadisticas" style="margin-top: 20px;"></div>
 
+  <style>
+    #equipo_estadisticas option {
+      padding-left: 35px;
+      background-repeat: no-repeat;
+      background-position: 5px center;
+      background-size: 30px 30px;
+    }
+
+    .escudo-estadisticas {
+      display: block;
+      margin: 0 auto 10px auto;
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+  </style>
+
   <script>
+    function normalizarNombre(nombre) {
+      return nombre
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
+        .toLowerCase();
+    }
+
     async function cargarEquiposEstadisticas() {
       try {
         const respuesta = await fetch('/equipos');
@@ -485,10 +562,29 @@
         const equipos = data.equipos || [];
 
         const select = document.getElementById('equipo_estadisticas');
+        select.innerHTML = '';
+
         equipos.forEach(equipo => {
           const opcion = new Option(equipo, equipo);
+          const urlEscudo = `${window.CDN_URL_PREFIX}${normalizarNombre(equipo)}.png`;
+          opcion.style.backgroundImage = `url('${urlEscudo}')`;
           select.add(opcion);
         });
+
+        // Mostrar escudo en el select seleccionado
+        function actualizarFondo() {
+          const val = select.value;
+          if (val) {
+            const url = `${window.CDN_URL_PREFIX}${normalizarNombre(val)}.png`;
+            select.style.backgroundImage = `url('${url}')`;
+          } else {
+            select.style.backgroundImage = 'none';
+          }
+        }
+
+        select.addEventListener('change', actualizarFondo);
+        actualizarFondo();
+
       } catch (error) {
         console.error('Error al cargar equipos para estadísticas:', error);
       }
@@ -510,12 +606,19 @@
           return;
         }
 
-        let html = '<ul style="list-style-type: none; padding: 0;">';
+        const escudoURL = `${window.CDN_URL_PREFIX}${normalizarNombre(equipo)}.png`;
+
+        let html = `
+          <img class="escudo-estadisticas" src="${escudoURL}" alt="${equipo}">
+          <ul style="list-style-type: none; padding: 0;">`;
+
         for (const [clave, valor] of Object.entries(data)) {
           html += `<li><strong>${clave.replace(/_/g, ' ')}:</strong> ${valor}</li>`;
         }
+
         html += '</ul>';
         contenedor.innerHTML = html;
+
       } catch (error) {
         console.error('Error al consultar estadísticas:', error);
         contenedor.innerHTML = 'Error al cargar estadísticas del equipo.';
@@ -525,6 +628,7 @@
     cargarEquiposEstadisticas();
   </script>
 </section>
+
 
 <!-- Sección Enfrentar Equipos -->
 <section id="enfrentar" style="position: relative; background-image: url('/static/cancha-futbol.png'); background-size: cover; background-position: center; padding: 4rem 1rem; border-radius: 1rem; color: white; text-align: center;">
