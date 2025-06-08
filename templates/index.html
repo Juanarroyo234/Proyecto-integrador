@@ -149,7 +149,13 @@
       border-color: #58a6ff;
     }
   </style>
+  <script>
+  window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
+</script>
+
 </head>
+
+
 <body>
   <header>
     <h1>Estadísticas de Fútbol</h1>
@@ -174,36 +180,44 @@
     </section>
 
     <!-- Sección Predicción -->
-<section id="prediccion">
-  <h2>Predicción de Resultados</h2>
+<section id="prediccion" style="max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+  <h2 style="text-align: center; font-size: 28px; color: #333;">⚽ Predicción de Resultados</h2>
 
-  <form id="form-prediccion">
-    <label for="equipo_local">Equipo Local:</label>
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <select name="equipo_local" id="equipo_local" required onchange="actualizarEscudo('equipo_local', 'escudo_local')"></select>
-      <img id="escudo_local" src="" alt="Escudo local" width="40" height="40">
+  <form id="form-prediccion" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
+    <div>
+      <label for="equipo_local" style="font-weight: bold; color: black;">Equipo Local:</label>
+      <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
+        <img id="escudo_local" src="" alt="Escudo local" width="50" height="50" style="border-radius: 50%; border: 2px solid #ccc; background: white;">
+        <select name="equipo_local" id="equipo_local" required onchange="actualizarEscudo('equipo_local', 'escudo_local')" style="flex: 1; padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px;">
+        </select>
+      </div>
     </div>
 
-    <label for="equipo_visitante">Equipo Visitante:</label>
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <select name="equipo_visitante" id="equipo_visitante" required onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')"></select>
-      <img id="escudo_visitante" src="" alt="Escudo visitante" width="40" height="40">
+    <div>
+      <label for="equipo_visitante" style="font-weight: bold;color: black;">Equipo Visitante:</label>
+      <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
+        <img id="escudo_visitante" src="" alt="Escudo visitante" width="50" height="50" style="border-radius: 50%; border: 2px solid #ccc; background: white;">
+        <select name="equipo_visitante" id="equipo_visitante" required onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')" style="flex: 1; padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px;">
+        </select>
+      </div>
     </div>
 
-    <button type="submit">Predecir</button>
+    <button type="submit" style="padding: 12px; background-color: #007bff; color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; transition: background 0.3s ease;">
+      Predecir Resultado
+    </button>
   </form>
 
-  <div id="resultado-prediccion" style="margin-top: 20px; font-weight: bold;"></div>
+  <div id="resultado-prediccion" style="margin-top: 25px; font-weight: bold; text-align: center; font-size: 18px;"></div>
 
   <script>
-    const CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749274506/";
+    const CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
 
     function normalizarNombre(nombre) {
       return nombre
-        .normalize("NFD")                     // separa acentos
-        .replace(/[\u0300-\u036f]/g, "")     // elimina tildes
-        .replace(/\s/g, '')                  // elimina espacios
-        .replace(/\./g, '')                  // elimina puntos
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
         .toLowerCase();
     }
 
@@ -223,17 +237,15 @@
         const localSelect = document.getElementById('equipo_local');
         const visitanteSelect = document.getElementById('equipo_visitante');
 
-        equipos.forEach((equipo, index) => {
+        equipos.forEach(equipo => {
           const opcion1 = new Option(equipo, equipo);
           const opcion2 = new Option(equipo, equipo);
           localSelect.add(opcion1);
           visitanteSelect.add(opcion2);
         });
 
-        // Cargar escudos por defecto del primer equipo
         actualizarEscudo('equipo_local', 'escudo_local');
         actualizarEscudo('equipo_visitante', 'escudo_visitante');
-
       } catch (error) {
         console.error('Error al cargar equipos:', error);
       }
@@ -268,23 +280,87 @@
 
 
 
+
     <!-- Sección Tabla de Posiciones -->
-    <section id="tabla">
-      <h2>Tabla de Posiciones</h2>
-      <table id="tabla-posiciones">
-        <thead>
-          <tr>
-            <th>Posición</th>
-            <th>Equipo</th>
-            <th>Puntos</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filas dinámicas aquí -->
-        </tbody>
-      </table>
-      <div id="mensaje-tabla"></div>
-    </section>
+<section id="tabla">
+  <h2>Tabla de Posiciones</h2>
+  <table id="tabla-posiciones" style="width: 100%; border-collapse: collapse; text-align: left;">
+    <thead>
+      <tr style="background-color: #222; color: white;">
+        <th style="padding: 8px;">Posición</th>
+        <th style="padding: 8px;">Equipo</th>
+        <th style="padding: 8px;">Puntos</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filas dinámicas aquí -->
+    </tbody>
+  </table>
+  <div id="mensaje-tabla" style="margin-top: 10px; color: red;"></div>
+</section>
+
+<script>
+  async function cargarTabla() {
+    try {
+      const respuesta = await fetch('/tabla');
+      if (!respuesta.ok) throw new Error('Error al obtener datos de tabla');
+      const datos = await respuesta.json();
+
+      const tbody = document.querySelector("#tabla-posiciones tbody");
+      tbody.innerHTML = "";
+
+      datos.forEach((fila, index) => {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #ccc";
+
+        // Posición
+        const tdPos = document.createElement("td");
+        tdPos.style.padding = "8px";
+        tdPos.textContent = index + 1;
+        tr.appendChild(tdPos);
+
+        // Equipo con escudo
+        const tdEquipo = document.createElement("td");
+        tdEquipo.style.padding = "8px";
+        tdEquipo.style.display = "flex";
+        tdEquipo.style.alignItems = "center";
+        tdEquipo.style.gap = "10px";
+
+        const img = document.createElement("img");
+        // Usa la variable global definida en window, sin redeclarar
+        img.src = `${window.CDN_URL_PREFIX}${fila.equipo_normalizado}.png`;
+        img.alt = fila.equipo;
+        img.width = 30;
+        img.height = 30;
+        img.style.borderRadius = "4px";
+        img.style.objectFit = "contain";
+
+        tdEquipo.appendChild(img);
+        tdEquipo.appendChild(document.createTextNode(fila.equipo));
+        tr.appendChild(tdEquipo);
+
+        // Puntos
+        const tdPuntos = document.createElement("td");
+        tdPuntos.style.padding = "8px";
+        tdPuntos.textContent = fila.puntos;
+        tr.appendChild(tdPuntos);
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('mensaje-tabla').textContent = "";
+
+    } catch (error) {
+      console.error(error);
+      document.getElementById('mensaje-tabla').textContent = "No se pudo cargar la tabla.";
+    }
+  }
+
+  cargarTabla();
+</script>
+
+
+
 
     <!-- Sección Partidos -->
     <section id="partidos">
@@ -433,15 +509,15 @@
 
   <form id="form-enfrentar" style="display: flex; justify-content: space-around; align-items: center; gap: 1rem; flex-wrap: wrap;">
     <div>
-      <label for="equipo1">Equipo 1:</label><br>
-      <select id="equipo1" required></select>
+      <label for="equipo1" style="color: black;">Equipo 1:</label><br>
+      <select id="equipo1" required onchange="actualizarEscudo('equipo1', 'escudo1'); actualizarNombresEquipos();"></select>
     </div>
 
     <div id="vs" style="font-size: 2rem; font-weight: bold;">VS</div>
 
     <div>
-      <label for="equipo2">Equipo 2:</label><br>
-      <select id="equipo2" required></select>
+      <label for="equipo2" style="color: black;">Equipo 2:</label><br>
+      <select id="equipo2" required onchange="actualizarEscudo('equipo2', 'escudo2'); actualizarNombresEquipos();"></select>
     </div>
 
     <div style="flex-basis: 100%; text-align: center; margin-top: 1rem;">
@@ -449,9 +525,15 @@
     </div>
   </form>
 
-  <div id="presentacion-equipos" style="display: flex; justify-content: space-between; margin-top: 3rem;">
-    <div id="nombre-equipo1" style="font-size: 1.5rem; font-weight: bold;"></div>
-    <div id="nombre-equipo2" style="font-size: 1.5rem; font-weight: bold;"></div>
+  <div id="presentacion-equipos" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+    <div style="flex: 1; text-align: center;">
+      <img id="escudo1" src="" alt="Escudo 1" width="80" height="80" style="display: none;"><br>
+      <div id="nombre-equipo1" style="font-size: 1.5rem; font-weight: bold;"></div>
+    </div>
+    <div style="flex: 1; text-align: center;">
+      <img id="escudo2" src="" alt="Escudo 2" width="80" height="80" style="display: none;"><br>
+      <div id="nombre-equipo2" style="font-size: 1.5rem; font-weight: bold;"></div>
+    </div>
   </div>
 
   <div id="grafica-enfrentar" style="margin-top: 2rem;"></div>
@@ -498,6 +580,45 @@
   </style>
 
   <script>
+    function normalizarNombre(nombre) {
+      return nombre
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
+        .toLowerCase();
+    }
+
+    function actualizarEscudo(selectId, imgId) {
+      const equipo = document.getElementById(selectId).value;
+      if (!equipo) return;
+
+      const nombreImagen = normalizarNombre(equipo) + ".png";
+      const img = document.getElementById(imgId);
+      img.src = `${window.CDN_URL_PREFIX}${nombreImagen}`;
+      img.style.display = 'inline-block';
+
+      console.log(`[DEBUG] ${imgId}: ${img.src}`);
+    }
+
+    function actualizarNombresEquipos() {
+      const equipo1 = document.getElementById('equipo1').value;
+      const equipo2 = document.getElementById('equipo2').value;
+
+      document.getElementById('nombre-equipo1').textContent = equipo1 || '';
+      document.getElementById('nombre-equipo2').textContent = equipo2 || '';
+
+      aplicarAnimacion('nombre-equipo1', 'slideInLeft');
+      aplicarAnimacion('nombre-equipo2', 'slideInRight');
+    }
+
+    function aplicarAnimacion(id, clase) {
+      const el = document.getElementById(id);
+      el.classList.remove(clase);
+      void el.offsetWidth;
+      el.classList.add(clase);
+    }
+
     async function cargarEquiposEnfrentar() {
       try {
         const respuesta = await fetch('/equipos');
@@ -508,38 +629,21 @@
         const select2 = document.getElementById('equipo2');
 
         equipos.forEach(equipo => {
-          const opcion1 = new Option(equipo, equipo);
-          const opcion2 = new Option(equipo, equipo);
-          select1.add(opcion1);
-          select2.add(opcion2);
+          select1.add(new Option(equipo, equipo));
+          select2.add(new Option(equipo, equipo));
         });
 
-        select1.addEventListener('change', actualizarNombresEquipos);
-        select2.addEventListener('change', actualizarNombresEquipos);
+        if (equipos.length > 0) {
+          select1.value = equipos[0];
+          select2.value = equipos[1] || equipos[0];
+
+          actualizarEscudo('equipo1', 'escudo1');
+          actualizarEscudo('equipo2', 'escudo2');
+          actualizarNombresEquipos();
+        }
       } catch (error) {
         console.error('Error al cargar equipos para enfrentar:', error);
       }
-    }
-
-    function aplicarAnimacion(id, clase) {
-      const el = document.getElementById(id);
-      el.classList.remove(clase);
-      void el.offsetWidth; // reinicia animación
-      el.classList.add(clase);
-    }
-
-    function actualizarNombresEquipos() {
-      const equipo1 = document.getElementById('equipo1').value;
-      const equipo2 = document.getElementById('equipo2').value;
-
-      const nombre1 = document.getElementById('nombre-equipo1');
-      const nombre2 = document.getElementById('nombre-equipo2');
-
-      nombre1.textContent = equipo1 || '';
-      nombre2.textContent = equipo2 || '';
-
-      aplicarAnimacion('nombre-equipo1', 'slideInLeft');
-      aplicarAnimacion('nombre-equipo2', 'slideInRight');
     }
 
     document.getElementById('form-enfrentar').addEventListener('submit', async (e) => {
@@ -567,6 +671,11 @@
     cargarEquiposEnfrentar();
   </script>
 </section>
+
+
+
+
+
 
   </main>
 
