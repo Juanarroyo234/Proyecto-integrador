@@ -807,6 +807,170 @@
   </script>
 </section>
 
+<section id="administrar" class="seccion-oculta" style="
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+  background-color: #121212;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+  color: #eee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+">
+  <h2 style="color: #80cbc4;">Administrar Partidos y Equipos</h2>
+
+  <!-- Agregar Partido -->
+  <form id="form-agregar-partido" style="margin-bottom: 2rem;">
+    <h3 style="color: #4db6ac;">Agregar Partido</h3>
+    <label>Equipo Local:</label>
+    <input type="text" id="agregar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Equipo Visitante:</label>
+    <input type="text" id="agregar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Goles Local:</label>
+    <input type="number" id="agregar-goles-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Goles Visitante:</label>
+    <input type="number" id="agregar-goles-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Resultado (local, visitante o empate):</label>
+    <input type="text" id="agregar-resultado" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <button type="submit" style="margin-top: 10px; background-color: #26a69a; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Agregar Partido</button>
+  </form>
+
+  <!-- Actualizar Partido -->
+  <form id="form-actualizar-partido" style="margin-bottom: 2rem;">
+    <h3 style="color: #4db6ac;">Actualizar Partido</h3>
+    <label>Equipo Local:</label>
+    <input type="text" id="actualizar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Equipo Visitante:</label>
+    <input type="text" id="actualizar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Goles Local:</label>
+    <input type="number" id="actualizar-goles-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Goles Visitante:</label>
+    <input type="number" id="actualizar-goles-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Resultado (local, visitante o empate):</label>
+    <input type="text" id="actualizar-resultado" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <button type="submit" style="margin-top: 10px; background-color: #26a69a; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Actualizar Partido</button>
+  </form>
+
+  <!-- Eliminar Partido -->
+  <form id="form-eliminar-partido" style="margin-bottom: 2rem;">
+    <h3 style="color: #4db6ac;">Eliminar Partido</h3>
+    <label>Equipo Local:</label>
+    <input type="text" id="eliminar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>Equipo Visitante:</label>
+    <input type="text" id="eliminar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <button type="submit" style="margin-top: 10px; background-color: #ef5350; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Eliminar Partido</button>
+  </form>
+
+  <!-- Agregar Equipo con URL -->
+  <form id="form-agregar-equipo" style="margin-bottom: 2rem;">
+    <h3 style="color: #4db6ac;">Agregar Equipo con Escudo</h3>
+    <label>Nombre del Equipo:</label>
+    <input type="text" id="nombre-equipo" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <label>URL del Escudo:</label>
+    <input type="url" id="url-escudo" required placeholder="https://example.com/escudo.png" style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <button type="submit" style="margin-top: 10px; background-color: #26a69a; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Agregar Equipo</button>
+  </form>
+
+  <!-- Mensaje -->
+  <div id="mensaje-admin" style="margin-top: 1rem; font-weight: bold;"></div>
+
+  <!-- Script -->
+  <script>
+    const mostrarMensaje = (msg, esError = false) => {
+      const div = document.getElementById("mensaje-admin");
+      div.textContent = msg;
+      div.style.color = esError ? "#ef5350" : "#80cbc4";
+    };
+
+    // Agregar Partido
+    document.getElementById("form-agregar-partido").addEventListener("submit", async e => {
+      e.preventDefault();
+      try {
+        const res = await fetch("/partidos/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            equipo_local: document.getElementById("agregar-local").value.trim(),
+            equipo_visitante: document.getElementById("agregar-visitante").value.trim(),
+            goles_local: parseInt(document.getElementById("agregar-goles-local").value),
+            goles_visitante: parseInt(document.getElementById("agregar-goles-visitante").value),
+            resultado: document.getElementById("agregar-resultado").value.trim().toLowerCase()
+          })
+        });
+        if (!res.ok) throw new Error("Error al agregar partido");
+        mostrarMensaje("Partido agregado correctamente");
+        e.target.reset();
+      } catch (err) {
+        mostrarMensaje(err.message, true);
+      }
+    });
+
+    // Actualizar Partido
+    document.getElementById("form-actualizar-partido").addEventListener("submit", async e => {
+      e.preventDefault();
+      try {
+        const res = await fetch("/partidos/", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            equipo_local: document.getElementById("actualizar-local").value.trim(),
+            equipo_visitante: document.getElementById("actualizar-visitante").value.trim(),
+            goles_local: parseInt(document.getElementById("actualizar-goles-local").value),
+            goles_visitante: parseInt(document.getElementById("actualizar-goles-visitante").value),
+            resultado: document.getElementById("actualizar-resultado").value.trim().toLowerCase()
+          })
+        });
+        if (!res.ok) throw new Error("Error al actualizar partido");
+        mostrarMensaje("Partido actualizado correctamente");
+        e.target.reset();
+      } catch (err) {
+        mostrarMensaje(err.message, true);
+      }
+    });
+
+    // Eliminar Partido
+    document.getElementById("form-eliminar-partido").addEventListener("submit", async e => {
+      e.preventDefault();
+      try {
+        const params = new URLSearchParams({
+          equipo_local: document.getElementById("eliminar-local").value.trim(),
+          equipo_visitante: document.getElementById("eliminar-visitante").value.trim()
+        });
+        const res = await fetch(`/partidos/?${params.toString()}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Error al eliminar partido");
+        mostrarMensaje("Partido eliminado correctamente");
+        e.target.reset();
+      } catch (err) {
+        mostrarMensaje(err.message, true);
+      }
+    });
+
+    // Agregar Equipo con Escudo
+    document.getElementById("form-agregar-equipo").addEventListener("submit", async e => {
+      e.preventDefault();
+      try {
+        const res = await fetch("/equipos/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nombre: document.getElementById("nombre-equipo").value.trim(),
+            url_escudo: document.getElementById("url-escudo").value.trim()
+          })
+        });
+        if (!res.ok) {
+  const errorData = await res.json();
+  throw new Error(errorData.detail || "Error al agregar equipo");
+}
+        mostrarMensaje("Equipo agregado correctamente con escudo");
+        e.target.reset();
+      } catch (err) {
+        mostrarMensaje(err.message, true);
+      }
+    });
+  </script>
+</section>
+
+
 
 
 

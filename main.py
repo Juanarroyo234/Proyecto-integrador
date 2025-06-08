@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse
 import matplotlib.pyplot as plt
 import io
 import base64
+from pydantic import BaseModel
 
 
 from operations import (
@@ -23,9 +24,10 @@ from operations import (
     actualizar_partido
 )
 from data_base import get_db, Base, engine
-from models import Partido
+from models import Partido, Equipo, PartidoCreate
 from schemas import PartidoSchema
 
+Equipo.__table__.create(bind=engine, checkfirst=True)
 # Inicializar app FastAPI
 app = FastAPI()
 
@@ -152,8 +154,16 @@ def tabla_liga(db: Session = Depends(get_db)):
 
 # Agregar nuevo partido
 @app.post("/partidos/")
-def agregar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int, resultado: str, db: Session = Depends(get_db)):
-    return agregar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
+def agregar_partido_endpoint(partido: PartidoCreate, db: Session = Depends(get_db)):
+    return agregar_partido(
+        db,
+        partido.equipo_local,
+        partido.equipo_visitante,
+        partido.goles_local,
+        partido.goles_visitante,
+        partido.resultado
+    )
+
 
 # Eliminar partido
 @app.delete("/partidos/")
@@ -327,3 +337,12 @@ def enfrentar_equipos(equipo1: str, equipo2: str, db: Session = Depends(get_db))
     <img src="data:image/png;base64,{img_base64}" alt="Gráfico de enfrentamientos">
     """
     return HTMLResponse(content=html)
+
+@app.get("/equipos/todos")
+def obtener_todos_equipos(db: Session = Depends(get_db)):
+    try:
+        equipos = db.query(Equipo).all()
+        return [{"nombre": eq.nombre, "url_escudo": eq.url_escudo} for eq in equipos]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener los equipos: {str(e)}")
+
