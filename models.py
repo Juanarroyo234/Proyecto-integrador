@@ -33,7 +33,6 @@ class Jugador(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
-    equipo = Column(String, nullable=False)  # nombre del equipo como texto
+    equipo = Column(String, nullable=False)
     nacionalidad = Column(String, nullable=False)
-    imagen_url = Column(String, nullable=True)
-
+    imagen_url = Column(String)

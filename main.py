@@ -378,44 +378,51 @@ async def crear_jugador(
         contenido = await foto.read()
         print(f"📦 Tamaño del archivo: {len(contenido)} bytes")
 
-        # Nombre único
+        # Crear nombre único
         filename = f"{str(uuid4())}_{foto.filename}"
 
-        # Subir a Supabase Storage con upsert habilitado
+        # Subir imagen a Supabase Storage
         res = supabase.storage.from_('jugadores').upload(
-            path=filename,
-            file=contenido,
-            file_options={
+            filename,
+            contenido,
+            {
                 "content-type": foto.content_type,
                 "x-upsert": "true"
             }
         )
 
-        # Verificar respuesta
-        if res.get("error"):
-            print("🔴 Error al subir a Supabase:", res)
-            raise HTTPException(status_code=400, detail=f"Error al subir la imagen: {res['error']['message']}")
+        print("📦 Respuesta upload Supabase:", res)
+        print("📦 Tipo de respuesta:", type(res))
+        print("📦 Atributos:", dir(res))
+
+        if not res or not hasattr(res, "path") or not res.path:
+            print("❌ La subida a Supabase NO devolvió un path válido")
+            raise HTTPException(status_code=500, detail="Fallo al subir la imagen a Supabase.")
+        else:
+            print("✅ Subida exitosa, path:", res.path)
 
         # Obtener URL pública
-        url_foto = supabase.storage.from_('jugadores').get_public_url(filename)
+        imagen_url = supabase.storage.from_('jugadores').get_public_url(res.path)
+        print(f"✅ Imagen subida correctamente: {imagen_url}")
 
-        # Guardar en la base de datos
+        # Crear jugador en la base de datos
         nuevo_jugador = Jugador(
             nombre=nombre,
             equipo=equipo,
             nacionalidad=nacionalidad,
-            url_foto=url_foto
+            imagen_url=imagen_url  # ✅ Aquí está bien el nombre del campo
         )
         db.add(nuevo_jugador)
         db.commit()
         db.refresh(nuevo_jugador)
 
+        # Respuesta
         return {
             "id": nuevo_jugador.id,
             "nombre": nuevo_jugador.nombre,
             "equipo": nuevo_jugador.equipo,
             "nacionalidad": nuevo_jugador.nacionalidad,
-            "url_foto": nuevo_jugador.url_foto
+            "imagen_url": nuevo_jugador.imagen_url  # ✅ Aquí también
         }
 
     except Exception as e:
