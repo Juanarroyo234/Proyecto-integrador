@@ -474,3 +474,63 @@ def eliminar_jugador(jugador_id: int, db: Session = Depends(get_db)):
     db.delete(jugador)
     db.commit()
     return {"mensaje": "Jugador eliminado correctamente"}
+
+@app.get("/desarrollador")
+def obtener_info_desarrollador():
+    return {
+        "nombre": "Juan Esteban Arroyo",
+        "correo": "jearroyo27@ucatolica.edu.co",
+        "github": "https://github.com/Juanarroyo234",
+        "rol": "Estudiante",
+        "institucion": "Universidad Catolica de Colombia"
+    }
+
+@app.get("/planeacion")
+def obtener_fase_planeacion():
+    return {
+        "fase": "Planeación",
+        "elementos": {
+            "casos_de_uso": [
+                "Registrar jugadores con imagen, nombre y nacionalidad.",
+                "Administrar partidos y resultados.",
+                "Visualizar tabla de posiciones y estadísticas.",
+                "Realizar predicciones de partidos usando IA."
+            ],
+            "modelo_datos": "Modelo relacional con tablas de Equipos, Jugadores, Partidos y Predicciones. Incluye soporte para imágenes de jugadores y escudos de equipos.",
+            "objetivos": [
+                "Ofrecer una plataforma interactiva para gestión de estadísticas de fútbol.",
+                "Predecir resultados usando machine learning.",
+                "Brindar visualización amigable para usuarios y administradores."
+            ],
+            "fuente_datos": "Datos simulados o personalizados extraídos de partidos reales para pruebas del sistema."
+        }
+    }
+
+@app.get("/diseno")
+def obtener_fase_diseno():
+    return {
+        "fase": "Diseño",
+        "elementos": {
+            "diagrama_clases": "Incluye clases como Equipo, Jugador, Partido, Prediccion, conectadas mediante relaciones uno-a-muchos y muchos-a-uno.",
+            "mapa_endpoints": [
+                "/equipos [GET, POST]",
+                "/jugadores [GET, POST]",
+                "/partidos [GET, POST, PUT, DELETE]",
+                "/prediccion [POST]",
+                "/tabla-posiciones [GET]",
+                "/desarrollador, /planeacion, /diseno, /objetivo [GET]"
+            ],
+            "mockups_wireframes": "Diseños en HTML/CSS simulando vistas principales: inicio, predicción, tabla, administrador y enfrentamiento. Estilo sencillo con carrusel informativo y navegación clara."
+        }
+    }
+
+@app.get("/objetivo")
+def obtener_objetivo_proyecto():
+    return {
+        "objetivo": (
+            "Desarrollar una plataforma web para la gestión de estadísticas de fútbol que "
+            "permita registrar equipos, jugadores y partidos, visualizar datos relevantes como la tabla de posiciones, "
+            "y predecir resultados utilizando modelos de Machine Learning, todo desde una interfaz web amigable."
+        )
+    }
+

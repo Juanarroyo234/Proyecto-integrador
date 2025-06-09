@@ -253,6 +253,45 @@
   .slide.activo {
     display: block;
   }
+
+  .accordion {
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+}
+
+.accordion-button {
+  background-color: #2d2d2d;
+  color: #fff;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 16px;
+  border-bottom: 1px solid #444;
+}
+
+.accordion-button:hover {
+  background-color: #444;
+}
+
+.accordion-content {
+  display: none;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-left: 2px solid #ccc;
+  border-right: 2px solid #ccc;
+  border-bottom: 2px solid #ccc;
+  overflow-x: auto;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+  font-size: 14px;
+}
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -274,6 +313,7 @@
     <li><a href="#administrar">Administrar</a></li>
     <li><a href="#enfrentar">Enfrentar Equipos</a></li>
          <li><a href="#jugadores">Configurar Jugadores</a></li>
+     <li><a href="#info-proyecto">Info Proyecto</a></li>
 
 </ul>
     </nav>
@@ -1212,6 +1252,73 @@ function mostrarJugador(jugador) {
   });
   </script>
 </section>
+
+<section id="info-proyecto" class="seccion-oculta" style="padding: 20px;">
+  <h2 style="text-align:center; margin-bottom: 20px;">Información del Proyecto</h2>
+
+  <div class="accordion" style="max-width: 800px; margin: 0 auto;">
+    <div class="accordion-item" style="margin-bottom: 10px;">
+      <button class="accordion-button" style="width: 100%; padding: 10px 15px; background-color: #222; color: #fff; border: none; text-align: left; font-weight: bold; cursor: pointer;">
+        👤 Desarrollador
+      </button>
+      <div class="accordion-content" id="contenido-desarrollador" style="display: none; background-color: #333; color: #fff; padding: 15px; border-left: 3px solid #007bff;"></div>
+    </div>
+
+    <div class="accordion-item" style="margin-bottom: 10px;">
+      <button class="accordion-button" style="width: 100%; padding: 10px 15px; background-color: #222; color: #fff; border: none; text-align: left; font-weight: bold; cursor: pointer;">
+        🧠 Objetivo del Proyecto
+      </button>
+      <div class="accordion-content" id="contenido-objetivo" style="display: none; background-color: #333; color: #fff; padding: 15px; border-left: 3px solid #28a745;"></div>
+    </div>
+
+    <div class="accordion-item" style="margin-bottom: 10px;">
+      <button class="accordion-button" style="width: 100%; padding: 10px 15px; background-color: #222; color: #fff; border: none; text-align: left; font-weight: bold; cursor: pointer;">
+        📝 Fase de Planeación
+      </button>
+      <div class="accordion-content" id="contenido-planeacion" style="display: none; background-color: #333; color: #fff; padding: 15px; border-left: 3px solid #ffc107;"></div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-button" style="width: 100%; padding: 10px 15px; background-color: #222; color: #fff; border: none; text-align: left; font-weight: bold; cursor: pointer;">
+        🎨 Fase de Diseño
+      </button>
+      <div class="accordion-content" id="contenido-diseno" style="display: none; background-color: #333; color: #fff; padding: 15px; border-left: 3px solid #17a2b8;"></div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.accordion-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const content = button.nextElementSibling;
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+      });
+    });
+
+    async function cargarInformacionProyecto() {
+      const urls = {
+        'contenido-desarrollador': '/desarrollador',
+        'contenido-objetivo': '/objetivo',
+        'contenido-planeacion': '/planeacion',
+        'contenido-diseno': '/diseno',
+      };
+
+      for (const [id, url] of Object.entries(urls)) {
+        const div = document.getElementById(id);
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          div.innerHTML = `<pre style="white-space: pre-wrap;">${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          div.innerHTML = '<p>Error al cargar los datos.</p>';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarInformacionProyecto);
+  </script>
+</section>
+
+
 
 
 
