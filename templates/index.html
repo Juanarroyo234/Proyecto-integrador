@@ -904,9 +904,9 @@
   <form id="form-agregar-partido" style="margin-bottom: 2rem;">
     <h3 style="color: #4db6ac;">Agregar Partido</h3>
     <label>Equipo Local:</label>
-    <input type="text" id="agregar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <select id="agregar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
     <label>Equipo Visitante:</label>
-    <input type="text" id="agregar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <select id="agregar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
     <label>Goles Local:</label>
     <input type="number" id="agregar-goles-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
     <label>Goles Visitante:</label>
@@ -920,9 +920,9 @@
   <form id="form-actualizar-partido" style="margin-bottom: 2rem;">
     <h3 style="color: #4db6ac;">Actualizar Partido</h3>
     <label>Equipo Local:</label>
-    <input type="text" id="actualizar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <select id="actualizar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
     <label>Equipo Visitante:</label>
-    <input type="text" id="actualizar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <select id="actualizar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
     <label>Goles Local:</label>
     <input type="number" id="actualizar-goles-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
     <label>Goles Visitante:</label>
@@ -936,9 +936,9 @@
   <form id="form-eliminar-partido" style="margin-bottom: 2rem;">
     <h3 style="color: #4db6ac;">Eliminar Partido</h3>
     <label>Equipo Local:</label>
-    <input type="text" id="eliminar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <select id="eliminar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
     <label>Equipo Visitante:</label>
-    <input type="text" id="eliminar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+    <select id="eliminar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
     <button type="submit" style="margin-top: 10px; background-color: #ef5350; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Eliminar Partido</button>
   </form>
 
@@ -963,6 +963,28 @@
       div.style.color = esError ? "#ef5350" : "#80cbc4";
     };
 
+    async function cargarSelectsEquipos() {
+      try {
+        const res = await fetch('/equipos');
+        const data = await res.json();
+        const equipos = data.equipos || [];
+
+        const selects = [
+          'agregar-local', 'agregar-visitante',
+          'actualizar-local', 'actualizar-visitante',
+          'eliminar-local', 'eliminar-visitante'
+        ];
+
+        selects.forEach(id => {
+          const sel = document.getElementById(id);
+          sel.innerHTML = ''; // Limpiar opciones
+          equipos.forEach(e => sel.add(new Option(e, e)));
+        });
+      } catch (err) {
+        console.error('Error al cargar equipos:', err);
+      }
+    }
+
     // Agregar Partido
     document.getElementById("form-agregar-partido").addEventListener("submit", async e => {
       e.preventDefault();
@@ -971,8 +993,8 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            equipo_local: document.getElementById("agregar-local").value.trim(),
-            equipo_visitante: document.getElementById("agregar-visitante").value.trim(),
+            equipo_local: document.getElementById("agregar-local").value,
+            equipo_visitante: document.getElementById("agregar-visitante").value,
             goles_local: parseInt(document.getElementById("agregar-goles-local").value),
             goles_visitante: parseInt(document.getElementById("agregar-goles-visitante").value),
             resultado: document.getElementById("agregar-resultado").value.trim().toLowerCase()
@@ -994,8 +1016,8 @@
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            equipo_local: document.getElementById("actualizar-local").value.trim(),
-            equipo_visitante: document.getElementById("actualizar-visitante").value.trim(),
+            equipo_local: document.getElementById("actualizar-local").value,
+            equipo_visitante: document.getElementById("actualizar-visitante").value,
             goles_local: parseInt(document.getElementById("actualizar-goles-local").value),
             goles_visitante: parseInt(document.getElementById("actualizar-goles-visitante").value),
             resultado: document.getElementById("actualizar-resultado").value.trim().toLowerCase()
@@ -1013,11 +1035,14 @@
     document.getElementById("form-eliminar-partido").addEventListener("submit", async e => {
       e.preventDefault();
       try {
-        const params = new URLSearchParams({
-          equipo_local: document.getElementById("eliminar-local").value.trim(),
-          equipo_visitante: document.getElementById("eliminar-visitante").value.trim()
+        const res = await fetch("/partidos/", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            equipo_local: document.getElementById("eliminar-local").value,
+            equipo_visitante: document.getElementById("eliminar-visitante").value
+          })
         });
-        const res = await fetch(`/partidos/?${params.toString()}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Error al eliminar partido");
         mostrarMensaje("Partido eliminado correctamente");
         e.target.reset();
@@ -1026,7 +1051,7 @@
       }
     });
 
-    // Agregar Equipo con Escudo
+    // Agregar Equipo
     document.getElementById("form-agregar-equipo").addEventListener("submit", async e => {
       e.preventDefault();
       try {
@@ -1035,21 +1060,23 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nombre: document.getElementById("nombre-equipo").value.trim(),
-            url_escudo: document.getElementById("url-escudo").value.trim()
+            escudo_url: document.getElementById("url-escudo").value.trim()
           })
         });
-        if (!res.ok) {
-  const errorData = await res.json();
-  throw new Error(errorData.detail || "Error al agregar equipo");
-}
-        mostrarMensaje("Equipo agregado correctamente con escudo");
+        if (!res.ok) throw new Error("Error al agregar equipo");
+        mostrarMensaje("Equipo agregado correctamente");
         e.target.reset();
+        cargarSelectsEquipos();
       } catch (err) {
         mostrarMensaje(err.message, true);
       }
     });
+
+    // Inicializar selects al cargar la sección
+    cargarSelectsEquipos();
   </script>
 </section>
+
 
 
 <section id="jugadores" class="seccion-oculta">
@@ -1154,7 +1181,7 @@ function mostrarJugador(jugador) {
   </main>
 
   <footer>
-    <p>&copy; 2025 - Proyecto de Fútbol</p>
+    <p>&copy; 2025 - Proyecto predicciones y estadisticas futbol - Juan Arroyo</p>
   </footer>
 <script>
   // Lógica para mostrar una sección a la vez

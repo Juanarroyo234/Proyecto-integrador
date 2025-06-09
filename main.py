@@ -28,7 +28,7 @@ from operations import (
 )
 from data_base import get_db, Base, engine
 from models import Partido, Equipo, Jugador
-from schemas import PartidoSchema, PartidoCreate, EquipoCreate, JugadorCreate
+from schemas import PartidoSchema, PartidoCreate, EquipoCreate, JugadorCreate, PartidoUpdate,PartidoEliminarSchema
 
 Equipo.__table__.create(bind=engine, checkfirst=True)
 # Inicializar app FastAPI
@@ -171,14 +171,36 @@ def agregar_partido_endpoint(partido: PartidoCreate, db: Session = Depends(get_d
 
 # Eliminar partido
 @app.delete("/partidos/")
-def eliminar_partido_endpoint(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
-    return eliminar_partido(db, equipo_local, equipo_visitante)
-
+def eliminar_partido_endpoint(datos: PartidoEliminarSchema, db: Session = Depends(get_db)):
+    partido = db.query(Partido).filter_by(
+        equipo_local=datos.equipo_local,
+        equipo_visitante=datos.equipo_visitante
+    ).first()
+    if not partido:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    db.delete(partido)
+    db.commit()
+    return {"mensaje": "Partido eliminado correctamente"}
 # Actualizar partido
 @app.put("/partidos/")
-def actualizar_partido_endpoint(equipo_local: str, equipo_visitante: str, goles_local: int, goles_visitante: int, resultado: str, db: Session = Depends(get_db)):
-    return actualizar_partido(db, equipo_local, equipo_visitante, goles_local, goles_visitante, resultado)
+def actualizar_partido_endpoint(partido: PartidoUpdate, db: Session = Depends(get_db)):
+    return actualizar_partido(
+        db,
+        partido.equipo_local,
+        partido.equipo_visitante,
+        partido.goles_local,
+        partido.goles_visitante,
+        partido.resultado
+    )
 
+@app.delete("/partidos/")
+def eliminar_partido_endpoint(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):
+    partido = db.query(Partido).filter_by(equipo_local=equipo_local, equipo_visitante=equipo_visitante).first()
+    if not partido:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+    db.delete(partido)
+    db.commit()
+    return {"mensaje": "Partido eliminado correctamente"}
 # Consultar un solo partido
 @app.get("/partido")
 def get_partido(equipo_local: str, equipo_visitante: str, db: Session = Depends(get_db)):

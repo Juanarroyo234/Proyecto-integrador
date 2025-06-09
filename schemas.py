@@ -43,3 +43,14 @@ class JugadorCreate(BaseModel):
     equipo: str
     nacionalidad: str
     imagen_url: str | None = None
+
+class PartidoUpdate(BaseModel):
+    equipo_local: str
+    equipo_visitante: str
+    goles_local: int
+    goles_visitante: int
+    resultado: str
+
+class PartidoEliminarSchema(BaseModel):
+    equipo_local: str
+    equipo_visitante: str
