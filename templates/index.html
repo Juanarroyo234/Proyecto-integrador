@@ -155,6 +155,57 @@
   display: block;
   }
 
+  .fifa-card {
+    position: relative;
+    width: 250px;
+    height: 350px;
+    margin: 10px;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .card-background {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  .player-photo {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid white;
+    object-fit: cover;
+    z-index: 2;
+  }
+
+  .player-info {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    z-index: 3;
+    text-shadow: 1px 1px 3px #000;
+  }
+
+  .player-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .player-team,
+  .player-country {
+    font-size: 14px;
+    margin: 4px 0;
+  }
+
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -992,7 +1043,11 @@
     <input type="file" name="foto" accept="image/*" required>
 
     <button type="submit">Guardar Jugador</button>
+
   </form>
+<button id="btn-cargar-jugadores" type="button" style="margin-top: 20px;">
+  Mostrar mis jugadores
+</button>
 
   <div id="jugadores-lista" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
 
@@ -1016,26 +1071,36 @@
       e.target.reset();
     });
 
-    function mostrarJugador(jugador) {
-      const contenedor = document.getElementById("jugadores-lista");
-      const carta = document.createElement("div");
-      carta.style.border = "2px solid gold";
-      carta.style.borderRadius = "12px";
-      carta.style.padding = "10px";
-      carta.style.background = "#1a1a1a";
-      carta.style.color = "#fff";
-      carta.style.width = "150px";
-      carta.style.textAlign = "center";
+  function mostrarJugador(jugador) {
+  const contenedor = document.getElementById("jugadores-lista");
+  const carta = document.createElement("div");
+  carta.classList.add("fifa-card");
 
-      carta.innerHTML = `
-        <img src="${jugador.imagen_url}" style="width: 100px; height: 100px; border-radius: 8px;">
-        <h4>${jugador.nombre}</h4>
-        <p><strong>Equipo:</strong> ${jugador.equipo}</p>
-        <p><strong>Nacionalidad:</strong> ${jugador.nacionalidad}</p>
-      `;
+  carta.innerHTML = `
+    <img class="card-background" src="/static/carta-fifa.png" alt="Fondo carta FIFA">
+    <img class="player-photo" src="${jugador.imagen_url}" alt="Foto del jugador">
+    <div class="player-info">
+      <p class="player-name">${jugador.nombre}</p>
+      <p class="player-team">${jugador.equipo}</p>
+      <p class="player-country">🌎 ${jugador.nacionalidad}</p>
+    </div>
+  `;
 
-      contenedor.appendChild(carta);
+  contenedor.appendChild(carta);
+}
+ document.getElementById("btn-cargar-jugadores").addEventListener("click", async () => {
+    const res = await fetch("/jugadores/");
+    if (!res.ok) {
+      alert("❌ Error al cargar los jugadores");
+      return;
     }
+
+    const jugadores = await res.json();
+    const contenedor = document.getElementById("jugadores-lista");
+    contenedor.innerHTML = ""; // Limpiar antes de mostrar
+
+    jugadores.forEach(mostrarJugador);
+  });
   </script>
 </section>
 

@@ -428,7 +428,17 @@ async def crear_jugador(
     except Exception as e:
         print(f"🛑 Excepción inesperada: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error al guardar jugador: {str(e)}")
+
 @app.get("/jugadores/")
-def obtener_jugadores(db: Session = Depends(get_db)):
+def listar_jugadores(db: Session = Depends(get_db)):
     jugadores = db.query(Jugador).all()
-    return jugadores
+    return [
+        {
+            "id": j.id,
+            "nombre": j.nombre,
+            "equipo": j.equipo,
+            "nacionalidad": j.nacionalidad,
+            "imagen_url": j.imagen_url
+        }
+        for j in jugadores
+    ]
