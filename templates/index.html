@@ -983,7 +983,7 @@
     <input type="text" name="nombre" required>
 
     <label>Equipo:</label>
-    <select name="equipo" id="equipo-select" required></select>
+    <input type="text" name="equipo" required>
 
     <label>Nacionalidad:</label>
     <input type="text" name="nacionalidad" required>
@@ -997,18 +997,6 @@
   <div id="jugadores-lista" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
 
   <script>
-    async function cargarEquipos() {
-      const res = await fetch('/equipos/');
-      const equipos = await res.json();
-      const select = document.getElementById("equipo-select");
-      equipos.forEach(equipo => {
-        const option = document.createElement("option");
-        option.value = equipo.nombre;
-        option.textContent = equipo.nombre;
-        select.appendChild(option);
-      });
-    }
-
     document.getElementById("form-jugador").addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -1017,6 +1005,11 @@
         method: 'POST',
         body: formData
       });
+
+      if (!res.ok) {
+        alert("❌ Error al guardar el jugador");
+        return;
+      }
 
       const data = await res.json();
       mostrarJugador(data);
@@ -1043,10 +1036,9 @@
 
       contenedor.appendChild(carta);
     }
-
-    cargarEquipos();
   </script>
 </section>
+
 
 
 

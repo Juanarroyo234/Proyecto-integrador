@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from uuid import uuid4
 from supabase_client import supabase
 
+
+
 from operations import (
     get_partidos_ganados_por_local,
     calcular_tabla_puntos,
@@ -359,42 +361,66 @@ def agregar_equipo(equipo: EquipoCreate, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al agregar equipo: {str(e)}")
 
-@router.post("/jugadores/")
-async def subir_jugador(
+@app.post("/jugadores/")
+async def crear_jugador(
     nombre: str = Form(...),
     equipo: str = Form(...),
     nacionalidad: str = Form(...),
-    foto: UploadFile = File(...)
+    foto: UploadFile = File(...),
+    db: Session = Depends(get_db)
 ):
     try:
-        # Subir la imagen a Supabase Storage
-        extension = foto.filename.split(".")[-1]
-        filename = f"{uuid4()}.{extension}"
-        content = await foto.read()
+        # Validar tipo de imagen
+        if not foto.filename.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+            raise HTTPException(status_code=400, detail="Formato de imagen no soportado.")
 
-        supabase.storage.from_("jugadores").upload(
+        # Leer contenido del archivo
+        contenido = await foto.read()
+        print(f"📦 Tamaño del archivo: {len(contenido)} bytes")
+
+        # Nombre único
+        filename = f"{str(uuid4())}_{foto.filename}"
+
+        # Subir a Supabase Storage con upsert habilitado
+        res = supabase.storage.from_('jugadores').upload(
             path=filename,
-            file=content,
-            file_options={"content-type": foto.content_type}
+            file=contenido,
+            file_options={
+                "content-type": foto.content_type,
+                "x-upsert": "true"
+            }
         )
 
-        public_url = supabase.storage.from_("jugadores").get_public_url(filename)
+        # Verificar respuesta
+        if res.get("error"):
+            print("🔴 Error al subir a Supabase:", res)
+            raise HTTPException(status_code=400, detail=f"Error al subir la imagen: {res['error']['message']}")
 
-        # Aquí podrías guardar también en tu BD local si deseas
+        # Obtener URL pública
+        url_foto = supabase.storage.from_('jugadores').get_public_url(filename)
+
+        # Guardar en la base de datos
+        nuevo_jugador = Jugador(
+            nombre=nombre,
+            equipo=equipo,
+            nacionalidad=nacionalidad,
+            url_foto=url_foto
+        )
+        db.add(nuevo_jugador)
+        db.commit()
+        db.refresh(nuevo_jugador)
 
         return {
-            "mensaje": "Jugador guardado",
-            "url_foto": public_url,
-            "nombre": nombre,
-            "equipo": equipo,
-            "nacionalidad": nacionalidad
+            "id": nuevo_jugador.id,
+            "nombre": nuevo_jugador.nombre,
+            "equipo": nuevo_jugador.equipo,
+            "nacionalidad": nuevo_jugador.nacionalidad,
+            "url_foto": nuevo_jugador.url_foto
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al subir jugador: {str(e)}")
-
-
-
+        print(f"🛑 Excepción inesperada: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al guardar jugador: {str(e)}")
 @app.get("/jugadores/")
 def obtener_jugadores(db: Session = Depends(get_db)):
     jugadores = db.query(Jugador).all()
