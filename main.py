@@ -24,8 +24,8 @@ from operations import (
     actualizar_partido
 )
 from data_base import get_db, Base, engine
-from models import Partido, Equipo, PartidoCreate
-from schemas import PartidoSchema
+from models import Partido, Equipo
+from schemas import PartidoSchema, PartidoCreate, EquipoCreate
 
 Equipo.__table__.create(bind=engine, checkfirst=True)
 # Inicializar app FastAPI
@@ -346,3 +346,13 @@ def obtener_todos_equipos(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener los equipos: {str(e)}")
 
+@app.post("/equipos/")
+def agregar_equipo(equipo: EquipoCreate, db: Session = Depends(get_db)):
+    try:
+        nuevo_equipo = Equipo(nombre=equipo.nombre, url_escudo=equipo.url_escudo)
+        db.add(nuevo_equipo)
+        db.commit()
+        db.refresh(nuevo_equipo)
+        return {"mensaje": "Equipo agregado correctamente", "equipo": {"nombre": nuevo_equipo.nombre, "url_escudo": nuevo_equipo.url_escudo}}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al agregar equipo: {str(e)}")

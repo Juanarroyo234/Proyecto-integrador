@@ -23,3 +23,15 @@ class EquipoSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class PartidoCreate(BaseModel):
+    equipo_local: str
+    equipo_visitante: str
+    goles_local: int
+    goles_visitante: int
+    resultado: str
+
+
+class EquipoCreate(BaseModel):
+    nombre: str
+    url_escudo: str | None = None

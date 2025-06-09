@@ -30,9 +30,3 @@ class Equipo(Base):
 
 
 
-class PartidoCreate(BaseModel):
-    equipo_local: str
-    equipo_visitante: str
-    goles_local: int
-    goles_visitante: int
-    resultado: str
