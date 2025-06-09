@@ -35,3 +35,11 @@ class PartidoCreate(BaseModel):
 class EquipoCreate(BaseModel):
     nombre: str
     url_escudo: str | None = None
+
+
+
+class JugadorCreate(BaseModel):
+    nombre: str
+    equipo: str
+    nacionalidad: str
+    imagen_url: str | None = None

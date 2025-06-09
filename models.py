@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from data_base import Base
 from pydantic import BaseModel
 
@@ -28,5 +28,12 @@ class Equipo(Base):
     nombre = Column(String, unique=True, nullable=False)
     url_escudo = Column(String, nullable=True)
 
+class Jugador(Base):
+    __tablename__ = "jugadores"
 
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=False)
+    equipo = Column(String, nullable=False)  # nombre del equipo como texto
+    nacionalidad = Column(String, nullable=False)
+    imagen_url = Column(String, nullable=True)
 

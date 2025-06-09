@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Query
+from fastapi import FastAPI, Depends, HTTPException, Request, Query, APIRouter, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from pydantic import BaseModel
-
+from uuid import uuid4
+from supabase_client import supabase
 
 from operations import (
     get_partidos_ganados_por_local,
@@ -24,12 +25,13 @@ from operations import (
     actualizar_partido
 )
 from data_base import get_db, Base, engine
-from models import Partido, Equipo
-from schemas import PartidoSchema, PartidoCreate, EquipoCreate
+from models import Partido, Equipo, Jugador
+from schemas import PartidoSchema, PartidoCreate, EquipoCreate, JugadorCreate
 
 Equipo.__table__.create(bind=engine, checkfirst=True)
 # Inicializar app FastAPI
 app = FastAPI()
+router = APIRouter()
 
 
 
@@ -356,3 +358,44 @@ def agregar_equipo(equipo: EquipoCreate, db: Session = Depends(get_db)):
         return {"mensaje": "Equipo agregado correctamente", "equipo": {"nombre": nuevo_equipo.nombre, "url_escudo": nuevo_equipo.url_escudo}}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al agregar equipo: {str(e)}")
+
+@router.post("/jugadores/")
+async def subir_jugador(
+    nombre: str = Form(...),
+    equipo: str = Form(...),
+    nacionalidad: str = Form(...),
+    foto: UploadFile = File(...)
+):
+    try:
+        # Subir la imagen a Supabase Storage
+        extension = foto.filename.split(".")[-1]
+        filename = f"{uuid4()}.{extension}"
+        content = await foto.read()
+
+        supabase.storage.from_("jugadores").upload(
+            path=filename,
+            file=content,
+            file_options={"content-type": foto.content_type}
+        )
+
+        public_url = supabase.storage.from_("jugadores").get_public_url(filename)
+
+        # Aquí podrías guardar también en tu BD local si deseas
+
+        return {
+            "mensaje": "Jugador guardado",
+            "url_foto": public_url,
+            "nombre": nombre,
+            "equipo": equipo,
+            "nacionalidad": nacionalidad
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al subir jugador: {str(e)}")
+
+
+
+@app.get("/jugadores/")
+def obtener_jugadores(db: Session = Depends(get_db)):
+    jugadores = db.query(Jugador).all()
+    return jugadores

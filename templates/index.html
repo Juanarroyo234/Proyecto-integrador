@@ -175,6 +175,8 @@
     <li><a href="#estadisticas">Estadísticas</a></li>
     <li><a href="#administrar">Administrar</a></li>
     <li><a href="#enfrentar">Enfrentar Equipos</a></li>
+         <li><a href="#jugadores">Configurar Jugadores</a></li>
+
 </ul>
     </nav>
   </header>
@@ -306,7 +308,6 @@
   <div id="mensaje-tabla" style="margin-top: 10px; color: red;"></div>
 
   <script>
-    // Asegúrate que esto esté definido globalmente, si no, defínelo aquí:
     if (!window.CDN_URL_PREFIX) {
       window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749274506/";
     }
@@ -348,20 +349,23 @@
 
           const img = document.createElement("img");
 
-          // Usa el nombre normalizado para la imagen
-          const nombreImg = normalizarNombre(fila.equipo) + ".png";
+          // Usa la URL guardada en la base de datos si existe, si no, usa Cloudinary
+          if (fila.url_escudo && fila.url_escudo.trim() !== "") {
+            img.src = fila.url_escudo;
+          } else {
+            const nombreImg = normalizarNombre(fila.equipo) + ".png";
+            img.src = `${window.CDN_URL_PREFIX}${nombreImg}`;
+          }
 
-          img.src = `${window.CDN_URL_PREFIX}${nombreImg}`;
           img.alt = fila.equipo;
           img.width = 30;
           img.height = 30;
           img.style.borderRadius = "4px";
           img.style.objectFit = "contain";
 
-          // Fallback para cuando la imagen no carga
           img.onerror = () => {
             img.style.display = "none";
-            console.warn(`No se encontró la imagen para: ${nombreImg}`);
+            console.warn(`No se encontró la imagen para: ${fila.equipo}`);
           };
 
           tdEquipo.appendChild(img);
@@ -388,6 +392,7 @@
     cargarTabla();
   </script>
 </section>
+
 
 
 
@@ -969,6 +974,81 @@
     });
   </script>
 </section>
+
+
+<section id="jugadores" class="seccion-oculta">
+  <h2>Agregar Jugador</h2>
+  <form id="form-jugador" enctype="multipart/form-data">
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required>
+
+    <label>Equipo:</label>
+    <select name="equipo" id="equipo-select" required></select>
+
+    <label>Nacionalidad:</label>
+    <input type="text" name="nacionalidad" required>
+
+    <label>Foto:</label>
+    <input type="file" name="foto" accept="image/*" required>
+
+    <button type="submit">Guardar Jugador</button>
+  </form>
+
+  <div id="jugadores-lista" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
+
+  <script>
+    async function cargarEquipos() {
+      const res = await fetch('/equipos/');
+      const equipos = await res.json();
+      const select = document.getElementById("equipo-select");
+      equipos.forEach(equipo => {
+        const option = document.createElement("option");
+        option.value = equipo.nombre;
+        option.textContent = equipo.nombre;
+        select.appendChild(option);
+      });
+    }
+
+    document.getElementById("form-jugador").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      const res = await fetch('/jugadores/', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      mostrarJugador(data);
+      e.target.reset();
+    });
+
+    function mostrarJugador(jugador) {
+      const contenedor = document.getElementById("jugadores-lista");
+      const carta = document.createElement("div");
+      carta.style.border = "2px solid gold";
+      carta.style.borderRadius = "12px";
+      carta.style.padding = "10px";
+      carta.style.background = "#1a1a1a";
+      carta.style.color = "#fff";
+      carta.style.width = "150px";
+      carta.style.textAlign = "center";
+
+      carta.innerHTML = `
+        <img src="${jugador.url_foto}" style="width: 100px; height: 100px; border-radius: 8px;">
+        <h4>${jugador.nombre}</h4>
+        <p><strong>Equipo:</strong> ${jugador.equipo}</p>
+        <p><strong>Nacionalidad:</strong> ${jugador.nacionalidad}</p>
+      `;
+
+      contenedor.appendChild(carta);
+    }
+
+    cargarEquipos();
+  </script>
+</section>
+
+
 
 
 
