@@ -231,6 +231,28 @@
     background-color: #cc0000;
   }
 
+    .carrusel {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+    color: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  }
+
+  .slide {
+    display: none;
+    font-size: 1.1em;
+    text-align: center;
+  }
+
+  .slide.activo {
+    display: block;
+  }
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -259,10 +281,31 @@
 
   <main>
     <!-- Sección de Inicio -->
-    <section id="inicio" class="seccion-visible">
-      <h2>Bienvenido</h2>
-      <p>Consulta estadísticas, predicciones y administra partidos.</p>
-    </section>
+  <section id="inicio" class="seccion-visible">
+  <h2>Bienvenido</h2>
+  <p>Consulta estadísticas, predicciones y administra partidos. Este proyecto te permite:</p>
+  <ul>
+    <li>🔮 Hacer predicciones de partidos</li>
+    <li>📊 Ver la tabla de posiciones</li>
+    <li>🗓️ Consultar y administrar partidos</li>
+    <li>📈 Ver estadísticas de equipos y jugadores</li>
+    <li>⚔️ Enfrentar equipos</li>
+    <li>🧑‍💻 Configurar jugadores y sus fotos</li>
+  </ul>
+
+  <div id="carrusel" class="carrusel">
+    <div class="slide activo">⚽ Último resultado: AC Milan 2 - 0 AS Roma</div>
+    <div class="slide">📈 Nueva predicción disponible: Real Madrid vs Barcelona</div>
+    <div class="slide">🧠 ¿Sabías? Nuestro modelo tiene 85% de acierto</div>
+     <div class="slide activo">
+    <h3>España vs Portugal</h3>
+    <p>Conoce todos los detalles de la final entre España y Portugal.</p>
+    <a href="https://www.espn.com.co/futbol/nota/_/id/15287397/portugal-vs-espana-final-nations-league-video-gol-cristiano-ronaldo-empate" target="_blank">Leer más</a>
+  </div>
+  </div>
+</section>
+
+
 
     <!-- Sección Predicción -->
 <section id="prediccion" class="seccion-oculta" style="max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
@@ -1213,6 +1256,20 @@ function mostrarJugador(jugador) {
       });
     });
   });
+</script>
+
+<script>
+  let index = 0;
+  const slides = document.querySelectorAll("#carrusel .slide");
+
+  function mostrarSiguienteSlide() {
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("activo", i === index);
+    });
+    index = (index + 1) % slides.length;
+  }
+
+  setInterval(mostrarSiguienteSlide, 3000);
 </script>
 
 </body>
