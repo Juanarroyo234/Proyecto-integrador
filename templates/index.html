@@ -155,70 +155,77 @@
   display: block;
   }
 
-  .fifa-card {
+    .fifa-card {
+    width: 180px;
+    height: 260px;
     position: relative;
-    width: 250px;
-    height: 350px;
     margin: 10px;
-    font-family: 'Arial', sans-serif;
+    font-family: sans-serif;
   }
 
-  .card-background {
+  .card-wrapper {
+    position: relative;
     width: 100%;
     height: 100%;
-    border-radius: 16px;
+  }
+
+  .card-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 0;
+  }
+
+  .player-img {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid white;
     object-fit: cover;
     z-index: 1;
   }
 
-  .player-photo {
+  .card-content {
     position: absolute;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid white;
-    object-fit: cover;
-    z-index: 2;
-  }
-
-  .player-info {
-    position: absolute;
-    bottom: 20px;
+    bottom: 10px;
     width: 100%;
     text-align: center;
     color: white;
-    z-index: 3;
-    text-shadow: 1px 1px 3px #000;
+    z-index: 2;
   }
 
   .player-name {
-    font-size: 18px;
     font-weight: bold;
-    margin: 0;
+    font-size: 14px;
+    margin: 5px 0 2px;
   }
 
   .player-team,
   .player-country {
-    font-size: 14px;
-    margin: 4px 0;
+    font-size: 12px;
+    margin: 1px 0;
   }
 
-   .btn-eliminar {
-    margin-top: 8px;
+  .btn-eliminar {
+    margin-top: 5px;
     background-color: #ff4d4d;
     border: none;
     color: white;
-    padding: 5px 10px;
-    border-radius: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
     cursor: pointer;
   }
 
   .btn-eliminar:hover {
     background-color: #cc0000;
   }
+
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -1086,37 +1093,33 @@
 
 function mostrarJugador(jugador) {
   const contenedor = document.getElementById("jugadores-lista");
+
   const carta = document.createElement("div");
-  carta.classList.add("fifa-card");
+  carta.className = "fifa-card";
 
   carta.innerHTML = `
-    <img class="card-background" src="/static/carta-fifa.png" alt="Fondo carta FIFA">
-    <img class="player-photo" src="${jugador.imagen_url}" alt="Foto del jugador">
-    <div class="player-info">
-      <p class="player-name">${jugador.nombre}</p>
-      <p class="player-team">${jugador.equipo}</p>
-      <p class="player-country">🌎 ${jugador.nacionalidad}</p>
-      <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
+    <div class="card-wrapper">
+      <img src="/static/carta-fifa.png" class="card-bg" alt="Fondo carta">
+      <img src="${jugador.imagen_url}" class="player-img" alt="Jugador">
+      <div class="card-content">
+        <h4 class="player-name">${jugador.nombre}</h4>
+        <p class="player-team">${jugador.equipo}</p>
+        <p class="player-country">🌍 ${jugador.nacionalidad}</p>
+        <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
+      </div>
     </div>
   `;
 
   carta.querySelector(".btn-eliminar").addEventListener("click", async () => {
-    const confirmacion = confirm(`¿Eliminar a ${jugador.nombre}?`);
-    if (!confirmacion) return;
-
-    const res = await fetch(`/jugadores/${jugador.id}`, {
-      method: "DELETE"
-    });
-
-    if (res.ok) {
-      carta.remove();
-    } else {
-      alert("❌ No se pudo eliminar el jugador");
-    }
+    if (!confirm(`¿Eliminar a ${jugador.nombre}?`)) return;
+    const res = await fetch(`/jugadores/${jugador.id}`, { method: "DELETE" });
+    if (res.ok) carta.remove();
+    else alert("❌ No se pudo eliminar el jugador");
   });
 
   contenedor.appendChild(carta);
 }
+
 
  document.getElementById("btn-cargar-jugadores").addEventListener("click", async () => {
     const res = await fetch("/jugadores/");
