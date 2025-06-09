@@ -206,6 +206,19 @@
     margin: 4px 0;
   }
 
+   .btn-eliminar {
+    margin-top: 8px;
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .btn-eliminar:hover {
+    background-color: #cc0000;
+  }
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -1071,7 +1084,7 @@
       e.target.reset();
     });
 
-  function mostrarJugador(jugador) {
+function mostrarJugador(jugador) {
   const contenedor = document.getElementById("jugadores-lista");
   const carta = document.createElement("div");
   carta.classList.add("fifa-card");
@@ -1083,11 +1096,28 @@
       <p class="player-name">${jugador.nombre}</p>
       <p class="player-team">${jugador.equipo}</p>
       <p class="player-country">🌎 ${jugador.nacionalidad}</p>
+      <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
     </div>
   `;
 
+  carta.querySelector(".btn-eliminar").addEventListener("click", async () => {
+    const confirmacion = confirm(`¿Eliminar a ${jugador.nombre}?`);
+    if (!confirmacion) return;
+
+    const res = await fetch(`/jugadores/${jugador.id}`, {
+      method: "DELETE"
+    });
+
+    if (res.ok) {
+      carta.remove();
+    } else {
+      alert("❌ No se pudo eliminar el jugador");
+    }
+  });
+
   contenedor.appendChild(carta);
 }
+
  document.getElementById("btn-cargar-jugadores").addEventListener("click", async () => {
     const res = await fetch("/jugadores/");
     if (!res.ok) {

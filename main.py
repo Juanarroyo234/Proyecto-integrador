@@ -442,3 +442,13 @@ def listar_jugadores(db: Session = Depends(get_db)):
         }
         for j in jugadores
     ]
+
+@app.delete("/jugadores/{jugador_id}")
+def eliminar_jugador(jugador_id: int, db: Session = Depends(get_db)):
+    jugador = db.query(Jugador).filter(Jugador.id == jugador_id).first()
+    if not jugador:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+
+    db.delete(jugador)
+    db.commit()
+    return {"mensaje": "Jugador eliminado correctamente"}
