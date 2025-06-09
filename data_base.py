@@ -16,10 +16,11 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 
 engine = create_engine(
     DATABASE_URL,
-    pool_size=5,
-    max_overflow=10,
+    pool_size=3,
+    max_overflow=2,
     pool_timeout=30,
-    pool_pre_ping=True
+    pool_pre_ping=True,
+    pool_recycle=1800
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
