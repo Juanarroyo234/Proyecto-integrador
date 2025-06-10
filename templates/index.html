@@ -304,6 +304,35 @@ pre {
   font-family: monospace;
   font-size: 14px;
 }
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.menu-card {
+  background: #1e1e2f;
+  color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, background 0.3s ease;
+  cursor: pointer;
+}
+
+.menu-card:hover {
+  transform: scale(1.05);
+  background: #2b2b45;
+}
+
+.menu-card .icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -338,17 +367,41 @@ pre {
   <h1 style="color: white; font-size: 1.5rem;">Mi Proyecto de Estadísticas de Fútbol</h1>
 </header>
 
-  <section id="inicio" class="seccion-visible">
-  <h2>Bienvenido</h2>
-  <p>Consulta estadísticas, predicciones y administra partidos. Este proyecto te permite:</p>
-  <ul>
-    <li>🔮 Hacer predicciones de partidos</li>
-    <li>📊 Ver la tabla de posiciones</li>
-    <li>🗓️ Consultar y administrar partidos</li>
-    <li>📈 Ver estadísticas de equipos y jugadores</li>
-    <li>⚔️ Enfrentar equipos</li>
-    <li>🧑‍💻 Configurar jugadores y sus fotos</li>
-  </ul>
+ <section id="inicio" class="seccion-visible">
+  <h2>⚽ Bienvenido a tu centro de estadísticas</h2>
+  <p>Consulta estadísticas, predicciones y administra partidos con facilidad:</p>
+  <div class="menu-grid">
+    <div class="menu-card">
+      <span class="icon">🔮</span>
+      <h3>Predicciones</h3>
+      <p>Analiza y predice el resultado de los partidos.</p>
+    </div>
+    <div class="menu-card">
+      <span class="icon">📊</span>
+      <h3>Tabla de Posiciones</h3>
+      <p>Visualiza la clasificación actualizada de los equipos.</p>
+    </div>
+    <div class="menu-card">
+      <span class="icon">🗓️</span>
+      <h3>Partidos</h3>
+      <p>Consulta y administra los partidos fácilmente.</p>
+    </div>
+    <div class="menu-card">
+      <span class="icon">📈</span>
+      <h3>Estadísticas</h3>
+      <p>Observa el rendimiento de equipos y jugadores.</p>
+    </div>
+    <div class="menu-card">
+      <span class="icon">⚔️</span>
+      <h3>Enfrentar Equipos</h3>
+      <p>Compara dos equipos cara a cara.</p>
+    </div>
+    <div class="menu-card">
+      <span class="icon">🧑‍💻</span>
+      <h3>Jugadores</h3>
+      <p>Configura jugadores y sube sus fotos.</p>
+    </div>
+  </div>
 
   <div id="carrusel" class="carrusel">
     <div class="slide activo">⚽ Último resultado: AC Milan 2 - 0 AS Roma</div>
