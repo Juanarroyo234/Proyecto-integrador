@@ -705,14 +705,14 @@ button[type="submit"]:hover {
 
 
     <!-- Sección Tabla de Posiciones -->
-<section id="tabla" class="seccion-oculta">
-  <h2>Tabla de Posiciones</h2>
-  <table id="tabla-posiciones" style="width: 100%; border-collapse: collapse; text-align: left;">
+<section id="tabla" class="seccion-oculta" style="padding: 20px; border-radius: 12px;">
+  <h2 style="color: white;">Tabla de Posiciones</h2>
+  <table id="tabla-posiciones" style="width: 100%; border-collapse: collapse; text-align: left; border: none; background-color: transparent;">
     <thead>
-      <tr style="background-color: #222; color: white;">
-        <th style="padding: 8px;">Posición</th>
-        <th style="padding: 8px;">Equipo</th>
-        <th style="padding: 8px;">Puntos</th>
+      <tr style="background-color: rgba(0, 0, 0, 0.6); color: white;">
+        <th style="padding: 8px; border: 1px solid white;">Posición</th>
+        <th style="padding: 8px; border: 1px solid white;">Equipo</th>
+        <th style="padding: 8px; border: 1px solid white;">Puntos</th>
       </tr>
     </thead>
     <tbody>
@@ -746,24 +746,27 @@ button[type="submit"]:hover {
 
         datos.forEach((fila, index) => {
           const tr = document.createElement("tr");
-          tr.style.borderBottom = "1px solid #ccc";
+          tr.style.borderBottom = "1px solid white";
+          tr.style.backgroundColor = "transparent";
 
-          // Posición
           const tdPos = document.createElement("td");
           tdPos.style.padding = "8px";
+          tdPos.style.border = "1px solid white";
+          tdPos.style.color = "white";
+          tdPos.style.backgroundColor = "transparent";
           tdPos.textContent = index + 1;
           tr.appendChild(tdPos);
 
-          // Equipo con escudo
           const tdEquipo = document.createElement("td");
           tdEquipo.style.padding = "8px";
           tdEquipo.style.display = "flex";
           tdEquipo.style.alignItems = "center";
           tdEquipo.style.gap = "10px";
+          tdEquipo.style.border = "1px solid white";
+          tdEquipo.style.color = "white";
+          tdEquipo.style.backgroundColor = "transparent";
 
           const img = document.createElement("img");
-
-          // Usa la URL guardada en la base de datos si existe, si no, usa Cloudinary
           if (fila.url_escudo && fila.url_escudo.trim() !== "") {
             img.src = fila.url_escudo;
           } else {
@@ -786,9 +789,11 @@ button[type="submit"]:hover {
           tdEquipo.appendChild(document.createTextNode(fila.equipo));
           tr.appendChild(tdEquipo);
 
-          // Puntos
           const tdPuntos = document.createElement("td");
           tdPuntos.style.padding = "8px";
+          tdPuntos.style.border = "1px solid white";
+          tdPuntos.style.color = "white";
+          tdPuntos.style.backgroundColor = "transparent";
           tdPuntos.textContent = fila.puntos;
           tr.appendChild(tdPuntos);
 
@@ -806,6 +811,9 @@ button[type="submit"]:hover {
     cargarTabla();
   </script>
 </section>
+
+
+
 
 
 
