@@ -1001,40 +1001,72 @@ button[type="submit"]:hover {
 
 
 <!-- Sección Enfrentar Equipos -->
-<section id="enfrentar" class="seccion-oculta" style="position: relative; background-image: url('/static/cancha-futbol.png'); background-size: cover; background-position: center; padding: 4rem 1rem; border-radius: 1rem; color: white; text-align: center;">
+<section id="enfrentar" class="seccion-oculta" style="
+  position: relative;
+  background-image: url('/static/cancha-futbol.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 4rem 1rem;
+  border-radius: 1rem;
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+">
+  <div style="
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 0;
+    border-radius: 1rem;
+  "></div>
 
-  <h2 style="margin-bottom: 2rem; font-size: 2rem;">Enfrentar Equipos</h2>
+  <div style="position: relative; z-index: 1; color: #fff;">
+    <h2 style="margin-bottom: 2rem; font-size: 2.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.8);">⚔️ Enfrentar Equipos</h2>
 
-  <form id="form-enfrentar" style="display: flex; justify-content: space-around; align-items: center; gap: 1rem; flex-wrap: wrap;">
-    <div>
-      <label for="equipo1" style="color: black;">Equipo 1:</label><br>
-      <select id="equipo1" required onchange="actualizarEscudo('equipo1', 'escudo1'); actualizarNombresEquipos();"></select>
+    <form id="form-enfrentar" style="display: flex; justify-content: center; align-items: center; gap: 2rem; flex-wrap: wrap;">
+      <div>
+        <label for="equipo1" style="font-weight: bold;">Equipo 1:</label><br>
+        <select id="equipo1" required onchange="actualizarEscudo('equipo1', 'escudo1'); actualizarNombresEquipos();" style="padding: 8px; border-radius: 10px; font-size: 1rem;">
+        </select>
+      </div>
+
+      <div id="vs" style="font-size: 2.5rem; font-weight: bold; animation: pulse 2s infinite ease-in-out; color: gold;">VS</div>
+
+      <div>
+        <label for="equipo2" style="font-weight: bold;">Equipo 2:</label><br>
+        <select id="equipo2" required onchange="actualizarEscudo('equipo2', 'escudo2'); actualizarNombresEquipos();" style="padding: 8px; border-radius: 10px; font-size: 1rem;">
+        </select>
+      </div>
+
+      <div style="flex-basis: 100%; text-align: center; margin-top: 1.5rem;">
+        <button type="submit" style="
+          padding: 12px 24px;
+          background: linear-gradient(135deg, #28a745, #218838);
+          color: white;
+          font-weight: bold;
+          border: none;
+          border-radius: 10px;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;">
+          🔍 Comparar Equipos
+        </button>
+      </div>
+    </form>
+
+    <div id="presentacion-equipos" style="display: flex; justify-content: space-around; align-items: center; margin-top: 2rem; flex-wrap: wrap;">
+      <div style="text-align: center; animation: slideInLeft 0.5s;">
+        <img id="escudo1" src="" alt="Escudo 1" width="90" height="90" style="display: none; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 12px black;"><br>
+        <div id="nombre-equipo1" style="font-size: 1.4rem; font-weight: bold; margin-top: 0.5rem;"></div>
+      </div>
+      <div style="text-align: center; animation: slideInRight 0.5s;">
+        <img id="escudo2" src="" alt="Escudo 2" width="90" height="90" style="display: none; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 12px black;"><br>
+        <div id="nombre-equipo2" style="font-size: 1.4rem; font-weight: bold; margin-top: 0.5rem;"></div>
+      </div>
     </div>
 
-    <div id="vs" style="font-size: 2rem; font-weight: bold;">VS</div>
-
-    <div>
-      <label for="equipo2" style="color: black;">Equipo 2:</label><br>
-      <select id="equipo2" required onchange="actualizarEscudo('equipo2', 'escudo2'); actualizarNombresEquipos();"></select>
-    </div>
-
-    <div style="flex-basis: 100%; text-align: center; margin-top: 1rem;">
-      <button type="submit" style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 5px; transition: transform 0.2s, box-shadow 0.3s;">Comparar</button>
-    </div>
-  </form>
-
-  <div id="presentacion-equipos" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
-    <div style="flex: 1; text-align: center;">
-      <img id="escudo1" src="" alt="Escudo 1" width="80" height="80" style="display: none;"><br>
-      <div id="nombre-equipo1" style="font-size: 1.5rem; font-weight: bold;"></div>
-    </div>
-    <div style="flex: 1; text-align: center;">
-      <img id="escudo2" src="" alt="Escudo 2" width="80" height="80" style="display: none;"><br>
-      <div id="nombre-equipo2" style="font-size: 1.5rem; font-weight: bold;"></div>
-    </div>
+    <div id="grafica-enfrentar" style="margin-top: 2rem;"></div>
   </div>
-
-  <div id="grafica-enfrentar" style="margin-top: 2rem;"></div>
 
   <style>
     @keyframes slideInLeft {
@@ -1047,128 +1079,113 @@ button[type="submit"]:hover {
       to   { transform: translateX(0); opacity: 1; }
     }
 
-    .slideInLeft {
-      animation: slideInLeft 0.5s ease;
-    }
-
-    .slideInRight {
-      animation: slideInRight 0.5s ease;
-    }
-
-    #vs {
-      animation: pulse 2s infinite ease-in-out;
-      color: gold;
-      text-shadow: 0 0 5px black;
-    }
-
     @keyframes pulse {
       0%   { transform: scale(1); opacity: 1; }
-      50%  { transform: scale(1.1); opacity: 0.8; }
+      50%  { transform: scale(1.15); opacity: 0.8; }
       100% { transform: scale(1); opacity: 1; }
     }
 
     button[type="submit"]:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
-    }
-
-    #nombre-equipo1, #nombre-equipo2 {
-      text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 10px rgba(40, 167, 69, 0.7);
     }
   </style>
-
   <script>
-    function normalizarNombre(nombre) {
-      return nombre
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s/g, '')
-        .replace(/\./g, '')
-        .toLowerCase();
-    }
+  function normalizarNombre(nombre) {
+    return nombre
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s/g, '')
+      .replace(/\./g, '')
+      .toLowerCase();
+  }
 
-    function actualizarEscudo(selectId, imgId) {
-      const equipo = document.getElementById(selectId).value;
-      if (!equipo) return;
+  function actualizarEscudo(selectId, imgId) {
+    const equipo = document.getElementById(selectId).value;
+    if (!equipo) return;
 
-      const nombreImagen = normalizarNombre(equipo) + ".png";
-      const img = document.getElementById(imgId);
-      img.src = `${window.CDN_URL_PREFIX}${nombreImagen}`;
-      img.style.display = 'inline-block';
+    const nombreImagen = normalizarNombre(equipo) + ".png";
+    const img = document.getElementById(imgId);
+    img.src = `${window.CDN_URL_PREFIX}${nombreImagen}`;
+    img.style.display = 'inline-block';
 
-      console.log(`[DEBUG] ${imgId}: ${img.src}`);
-    }
+    console.log(`[DEBUG] ${imgId}: ${img.src}`);
+  }
 
-    function actualizarNombresEquipos() {
-      const equipo1 = document.getElementById('equipo1').value;
-      const equipo2 = document.getElementById('equipo2').value;
+  function actualizarNombresEquipos() {
+    const equipo1 = document.getElementById('equipo1').value;
+    const equipo2 = document.getElementById('equipo2').value;
 
-      document.getElementById('nombre-equipo1').textContent = equipo1 || '';
-      document.getElementById('nombre-equipo2').textContent = equipo2 || '';
+    const nombre1 = document.getElementById('nombre-equipo1');
+    const nombre2 = document.getElementById('nombre-equipo2');
 
-      aplicarAnimacion('nombre-equipo1', 'slideInLeft');
-      aplicarAnimacion('nombre-equipo2', 'slideInRight');
-    }
+    nombre1.textContent = equipo1 || '';
+    nombre2.textContent = equipo2 || '';
 
-    function aplicarAnimacion(id, clase) {
-      const el = document.getElementById(id);
-      el.classList.remove(clase);
-      void el.offsetWidth;
-      el.classList.add(clase);
-    }
+    aplicarAnimacion(nombre1, 'slideInLeft');
+    aplicarAnimacion(nombre2, 'slideInRight');
+  }
 
-    async function cargarEquiposEnfrentar() {
-      try {
-        const respuesta = await fetch('/equipos');
-        const data = await respuesta.json();
-        const equipos = data.equipos || [];
+  function aplicarAnimacion(elemento, clase) {
+    elemento.classList.remove(clase);
+    void elemento.offsetWidth; // Reinicia la animación
+    elemento.classList.add(clase);
+  }
 
-        const select1 = document.getElementById('equipo1');
-        const select2 = document.getElementById('equipo2');
+  async function cargarEquiposEnfrentar() {
+    try {
+      const respuesta = await fetch('/equipos');
+      const data = await respuesta.json();
+      const equipos = data.equipos || [];
 
-        equipos.forEach(equipo => {
-          select1.add(new Option(equipo, equipo));
-          select2.add(new Option(equipo, equipo));
-        });
+      const select1 = document.getElementById('equipo1');
+      const select2 = document.getElementById('equipo2');
 
-        if (equipos.length > 0) {
-          select1.value = equipos[0];
-          select2.value = equipos[1] || equipos[0];
+      equipos.forEach(equipo => {
+        select1.add(new Option(equipo, equipo));
+        select2.add(new Option(equipo, equipo));
+      });
 
-          actualizarEscudo('equipo1', 'escudo1');
-          actualizarEscudo('equipo2', 'escudo2');
-          actualizarNombresEquipos();
-        }
-      } catch (error) {
-        console.error('Error al cargar equipos para enfrentar:', error);
+      if (equipos.length > 0) {
+        select1.value = equipos[0];
+        select2.value = equipos[1] || equipos[0];
+
+        actualizarEscudo('equipo1', 'escudo1');
+        actualizarEscudo('equipo2', 'escudo2');
+        actualizarNombresEquipos();
       }
+    } catch (error) {
+      console.error('Error al cargar equipos para enfrentar:', error);
+    }
+  }
+
+  document.getElementById('form-enfrentar').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const equipo1 = document.getElementById('equipo1').value;
+    const equipo2 = document.getElementById('equipo2').value;
+    const contenedor = document.getElementById('grafica-enfrentar');
+    contenedor.innerHTML = '';
+
+    if (equipo1 === equipo2) {
+      contenedor.innerText = '⚠️ Selecciona equipos diferentes.';
+      return;
     }
 
-    document.getElementById('form-enfrentar').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const equipo1 = document.getElementById('equipo1').value;
-      const equipo2 = document.getElementById('equipo2').value;
-      const contenedor = document.getElementById('grafica-enfrentar');
-      contenedor.innerHTML = '';
+    try {
+      const respuesta = await fetch(`/enfrentar?equipo1=${encodeURIComponent(equipo1)}&equipo2=${encodeURIComponent(equipo2)}`);
+      const html = await respuesta.text();
+      contenedor.innerHTML = html;
+    } catch (error) {
+      console.error('Error al comparar equipos:', error);
+      contenedor.innerText = '❌ Error al obtener la comparación.';
+    }
+  });
 
-      if (equipo1 === equipo2) {
-        contenedor.innerText = 'Selecciona equipos diferentes.';
-        return;
-      }
+  cargarEquiposEnfrentar();
+</script>
 
-      try {
-        const respuesta = await fetch(`/enfrentar?equipo1=${encodeURIComponent(equipo1)}&equipo2=${encodeURIComponent(equipo2)}`);
-        const html = await respuesta.text();
-        contenedor.innerHTML = html;
-      } catch (error) {
-        console.error('Error al comparar equipos:', error);
-        contenedor.innerText = 'Error al obtener la comparación.';
-      }
-    });
-
-    cargarEquiposEnfrentar();
-  </script>
 </section>
+
 
 <section id="administrar" class="seccion-oculta" style="
   max-width: 700px;
