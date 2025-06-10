@@ -363,6 +363,96 @@ pre {
   background: rgba(0, 0, 0, 0.8);
 }
 
+.prediccion-dark {
+  max-width: 600px;
+  margin: auto;
+  padding: 25px;
+  background: #1f1f2f;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  color: #eee;
+}
+
+.prediccion-dark h2 {
+  text-align: center;
+  font-size: 28px;
+  color: #00aced;
+}
+
+.grupo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.grupo-form label {
+  font-weight: bold;
+  color: #ccc;
+}
+
+.seleccion-equipo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.seleccion-equipo img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #555;
+  background: #fff;
+}
+
+.seleccion-equipo select {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  font-size: 16px;
+  background: #2b2b3d;
+  color: #fff;
+}
+
+button[type="submit"] {
+  padding: 12px;
+  background-color: #00aced;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  transition: background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #0084c4;
+}
+
+.resultado-prediccion {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 18px;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.resultado-prediccion.exito {
+  background-color: #1e4d2b;
+  color: #c6f6c4;
+}
+
+.resultado-prediccion.error {
+  background-color: #5c1f1f;
+  color: #ffcaca;
+}
+
+
 
   </style>
   <script>
@@ -456,34 +546,30 @@ pre {
 
 
     <!-- Sección Predicción -->
-<section id="prediccion" class="seccion-oculta" style="max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-  <h2 style="text-align: center; font-size: 28px; color: #333;">⚽ Predicción de Resultados</h2>
+<section id="prediccion" class="seccion-oculta prediccion-dark">
+  <h2>⚽ Predicción de Resultados</h2>
 
-  <form id="form-prediccion" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
-    <div>
-      <label for="equipo_local" style="font-weight: bold; color: black;">Equipo Local:</label>
-      <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
-        <img id="escudo_local" src="" alt="Escudo local" width="50" height="50" style="border-radius: 50%; border: 2px solid #ccc; background: white;">
-        <select name="equipo_local" id="equipo_local" required onchange="actualizarEscudo('equipo_local', 'escudo_local')" style="flex: 1; padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px;">
-        </select>
+  <form id="form-prediccion">
+    <div class="grupo-form">
+      <label for="equipo_local">Equipo Local:</label>
+      <div class="seleccion-equipo">
+        <img id="escudo_local" src="" alt="Escudo local">
+        <select name="equipo_local" id="equipo_local" required onchange="actualizarEscudo('equipo_local', 'escudo_local')"></select>
       </div>
     </div>
 
-    <div>
-      <label for="equipo_visitante" style="font-weight: bold;color: black;">Equipo Visitante:</label>
-      <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
-        <img id="escudo_visitante" src="" alt="Escudo visitante" width="50" height="50" style="border-radius: 50%; border: 2px solid #ccc; background: white;">
-        <select name="equipo_visitante" id="equipo_visitante" required onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')" style="flex: 1; padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px;">
-        </select>
+    <div class="grupo-form">
+      <label for="equipo_visitante">Equipo Visitante:</label>
+      <div class="seleccion-equipo">
+        <img id="escudo_visitante" src="" alt="Escudo visitante">
+        <select name="equipo_visitante" id="equipo_visitante" required onchange="actualizarEscudo('equipo_visitante', 'escudo_visitante')"></select>
       </div>
     </div>
 
-    <button type="submit" style="padding: 12px; background-color: #007bff; color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; transition: background 0.3s ease;">
-      Predecir Resultado
-    </button>
+    <button type="submit">Predecir Resultado</button>
   </form>
 
-  <div id="resultado-prediccion" style="margin-top: 25px; font-weight: bold; text-align: center; font-size: 18px;"></div>
+  <div id="resultado-prediccion" class="resultado-prediccion oculto"></div>
 
   <script>
     const CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -532,18 +618,22 @@ pre {
 
       const local = document.getElementById('equipo_local').value;
       const visitante = document.getElementById('equipo_visitante').value;
+      const resultadoDiv = document.getElementById('resultado-prediccion');
 
       if (local === visitante) {
-        document.getElementById('resultado-prediccion').innerText = "Selecciona equipos diferentes.";
+        resultadoDiv.innerText = "❌ Debes seleccionar equipos diferentes.";
+        resultadoDiv.className = "resultado-prediccion error";
         return;
       }
 
       try {
         const respuesta = await fetch(`/predecir?equipo_local=${encodeURIComponent(local)}&equipo_visitante=${encodeURIComponent(visitante)}`);
         const resultado = await respuesta.text();
-        document.getElementById('resultado-prediccion').innerText = "Predicción: " + resultado;
+        resultadoDiv.innerText = "✅ Predicción: " + resultado;
+        resultadoDiv.className = "resultado-prediccion exito";
       } catch (error) {
-        document.getElementById('resultado-prediccion').innerText = "Error al obtener la predicción.";
+        resultadoDiv.innerText = "⚠️ Error al obtener la predicción.";
+        resultadoDiv.className = "resultado-prediccion error";
         console.error(error);
       }
     });
@@ -551,6 +641,7 @@ pre {
     cargarEquipos();
   </script>
 </section>
+
 
 
 
