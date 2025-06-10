@@ -221,13 +221,12 @@ input[type="text"]::placeholder {
 
 .fifa-card {
   position: relative;
-  width: 200px;
-  height: 320px;
-  background-color: #222;
-  border-radius: 15px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+  width: 180px;
+  height: 260px;
   overflow: hidden;
-  transition: transform 0.3s ease;
+  border-radius: 1rem;
+  box-shadow: 0 0 12px rgba(0,0,0,0.5);
+  transition: transform 0.3s;
 }
 
 .fifa-card:hover {
@@ -250,22 +249,25 @@ input[type="text"]::placeholder {
 }
 
 .player-img {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-top: 1.2rem;
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  width: 120px;
+  transform: translateX(-50%);
   z-index: 1;
-  border: 2px solid white;
+  pointer-events: none;
 }
 
 .card-content {
-  position: relative;
-  z-index: 2;
-  padding: 1rem;
-  color: #fff;
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
   text-align: center;
+  z-index: 2;
+  color: white;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-shadow: 0 0 5px black;
 }
 
 .player-name {
@@ -284,17 +286,19 @@ input[type="text"]::placeholder {
 }
 
 .btn-eliminar {
-  padding: 5px 10px;
-  background: #dc3545;
+  margin-top: 5px;
+  background: #ff4d4d;
   color: white;
   border: none;
-  border-radius: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
+  transition: background 0.3s;
 }
 
 .btn-eliminar:hover {
-  background-color: #b02a37;
+  background: #d93636;
 }
 
 
@@ -1519,20 +1523,18 @@ button[type="submit"]:hover {
 
       const carta = document.createElement("div");
       carta.className = "fifa-card";
-
-     carta.innerHTML = `
-  <div class="card-wrapper">
-    <img src="/static/carta-fifa.png" class="card-bg" alt="Fondo carta">
-    <img src="${jugador.imagen_url}" class="player-img" alt="Jugador">
-    <div class="card-content">
-      <h4 class="player-name">${jugador.nombre}</h4>
-      <p class="player-team">${jugador.equipo}</p>
-      <p class="player-country">🌍 ${jugador.nacionalidad}</p>
-      <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
-    </div>
-  </div>
-`;
-
+      carta.innerHTML = `
+        <div class="card-wrapper">
+          <img src="/static/carta-fifa.png" class="card-bg" alt="Fondo carta">
+          <img src="${jugador.imagen_url}" class="player-img" alt="Jugador">
+          <div class="card-content">
+            <h4 class="player-name">${jugador.nombre}</h4>
+            <p class="player-team">${jugador.equipo}</p>
+            <p class="player-country">🌍 ${jugador.nacionalidad}</p>
+            <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
+          </div>
+        </div>
+      `;
 
       carta.querySelector(".btn-eliminar").addEventListener("click", async () => {
         if (!confirm(`¿Eliminar a ${jugador.nombre}?`)) return;
@@ -1559,6 +1561,7 @@ button[type="submit"]:hover {
     });
   </script>
 </section>
+
 
 
 
