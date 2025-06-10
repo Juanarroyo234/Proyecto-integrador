@@ -1268,20 +1268,22 @@ button[type="submit"]:hover {
   <h2 style="color: #80cbc4;">Administrar Partidos y Equipos</h2>
 
   <!-- Agregar Partido -->
-  <form id="form-agregar-partido" style="margin-bottom: 2rem;">
-    <h3 style="color: #4db6ac;">Agregar Partido</h3>
-    <label>Equipo Local:</label>
-    <select id="agregar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
-    <label>Equipo Visitante:</label>
-    <select id="agregar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;"></select>
-    <label>Goles Local:</label>
-    <input type="number" id="agregar-goles-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
-    <label>Goles Visitante:</label>
-    <input type="number" id="agregar-goles-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
-    <label>Resultado (local, visitante o empate):</label>
-    <input type="text" id="agregar-resultado" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
-    <button type="submit" style="margin-top: 10px; background-color: #26a69a; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Agregar Partido</button>
-  </form>
+ <!-- Agregar Partido -->
+<form id="form-agregar-partido" style="margin-bottom: 2rem;">
+  <h3 style="color: #4db6ac;">Agregar Partido</h3>
+  <label>Equipo Local:</label>
+  <input type="text" id="agregar-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+  <label>Equipo Visitante:</label>
+  <input type="text" id="agregar-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+  <label>Goles Local:</label>
+  <input type="number" id="agregar-goles-local" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+  <label>Goles Visitante:</label>
+  <input type="number" id="agregar-goles-visitante" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+  <label>Resultado (local, visitante o empate):</label>
+  <input type="text" id="agregar-resultado" required style="background:#1e1e1e; color:#eee; border:1px solid #333; padding:6px; width: 100%;">
+  <button type="submit" style="margin-top: 10px; background-color: #26a69a; color: #fff; border:none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Agregar Partido</button>
+</form>
+
 
   <!-- Actualizar Partido -->
   <form id="form-actualizar-partido" style="margin-bottom: 2rem;">
@@ -1330,27 +1332,27 @@ button[type="submit"]:hover {
       div.style.color = esError ? "#ef5350" : "#80cbc4";
     };
 
-    async function cargarSelectsEquipos() {
-      try {
-        const res = await fetch('/equipos');
-        const data = await res.json();
-        const equipos = data.equipos || [];
+ async function cargarSelectsEquipos() {
+  try {
+    const res = await fetch('/equipos');
+    const data = await res.json();
+    const equipos = data.equipos || [];
 
-        const selects = [
-          'agregar-local', 'agregar-visitante',
-          'actualizar-local', 'actualizar-visitante',
-          'eliminar-local', 'eliminar-visitante'
-        ];
+    const selects = [
+      'actualizar-local', 'actualizar-visitante',
+      'eliminar-local', 'eliminar-visitante'
+    ];
 
-        selects.forEach(id => {
-          const sel = document.getElementById(id);
-          sel.innerHTML = ''; // Limpiar opciones
-          equipos.forEach(e => sel.add(new Option(e, e)));
-        });
-      } catch (err) {
-        console.error('Error al cargar equipos:', err);
-      }
-    }
+    selects.forEach(id => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = ''; // Limpiar opciones
+      equipos.forEach(e => sel.add(new Option(e, e)));
+    });
+  } catch (err) {
+    console.error('Error al cargar equipos:', err);
+  }
+}
+
 
     // Agregar Partido
     document.getElementById("form-agregar-partido").addEventListener("submit", async e => {
