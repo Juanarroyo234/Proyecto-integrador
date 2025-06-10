@@ -333,6 +333,37 @@ pre {
   margin-bottom: 0.5rem;
 }
 
+.imagen-con-link {
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.imagen-con-link img {
+  max-width: 300px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.link-sobre-imagen {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.link-sobre-imagen:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+
   </style>
   <script>
   window.CDN_URL_PREFIX = "https://res.cloudinary.com/dwzga0ihc/image/upload/v1749327074/";
@@ -403,17 +434,23 @@ pre {
     </div>
   </div>
 
-  <div id="carrusel" class="carrusel">
-    <div class="slide activo">⚽ Último resultado: AC Milan 2 - 0 AS Roma</div>
-    <div class="slide">📈 Nueva predicción disponible: Real Madrid vs Barcelona</div>
-    <div class="slide">🧠 ¿Sabías? Nuestro modelo tiene 85% de acierto</div>
-     <div class="slide activo">
+ <div id="carrusel" class="carrusel">
+  <div class="slide activo">⚽ Último resultado: AC Milan 2 - 0 AS Roma</div>
+  <div class="slide">📈 Nueva predicción disponible: Real Madrid vs Barcelona</div>
+  <div class="slide">🧠 ¿Sabías? Nuestro modelo tiene 85% de acierto</div>
+
+  <div class="slide activo slide-destacado">
     <h3>España vs Portugal</h3>
     <p>Conoce todos los detalles de la final entre España y Portugal.</p>
-    <a href="https://www.espn.com.co/futbol/nota/_/id/15287397/portugal-vs-espana-final-nations-league-video-gol-cristiano-ronaldo-empate" target="_blank">Leer más</a>
-         <img src="/static/cristiano.jpeg" alt="España vs Portugal" style="max-width: 300px; height: auto; margin-top: 10px; border-radius: 8px;">
+
+    <div class="imagen-con-link">
+      <img src="/static/cristiano.jpeg" alt="España vs Portugal">
+      <a href="https://www.espn.com.co/futbol/nota/_/id/15287397/portugal-vs-espana-final-nations-league-video-gol-cristiano-ronaldo-empate"
+         target="_blank" class="link-sobre-imagen">Ver detalle 📎</a>
+    </div>
   </div>
-  </div>
+</div>
+
 </section>
 
 
