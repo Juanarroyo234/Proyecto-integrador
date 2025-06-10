@@ -167,81 +167,137 @@ nav a:hover {
   display: block;
   }
 
-    .fifa-card {
-    width: 180px;
-    height: 260px;
-    position: relative;
-    margin: 10px;
-    font-family: sans-serif;
-  }
+ .custom-file-upload {
+  background-color: #1f1f1f;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  font-weight: bold;
+  border: 2px solid #555;
+  transition: background 0.3s, transform 0.2s;
+}
 
-  .card-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
+.custom-file-upload:hover {
+  background-color: #333;
+  transform: scale(1.02);
+}
+
+button[type="submit"],
+#btn-cargar-jugadores {
+  background-color: #198754;
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#btn-cargar-jugadores {
+  background-color: #ffc107;
+  color: #000;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+input[type="text"] {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+input[type="text"]::placeholder {
+  color: #bbb;
+}
+
+.fifa-card {
+  position: relative;
+  width: 200px;
+  height: 320px;
+  background-color: #222;
+  border-radius: 15px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.fifa-card:hover {
+  transform: scale(1.05);
+}
+
+.card-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 
 .card-bg {
   position: absolute;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   z-index: 0;
+  opacity: 0.25;
 }
-
 
 .player-img {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90px;
-  height: auto;
-  object-fit: contain;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 1.2rem;
   z-index: 1;
+  border: 2px solid white;
+}
 
-  /* Elimina esto si no quieres borde circular ni fondo blanco */
+.card-content {
+  position: relative;
+  z-index: 2;
+  padding: 1rem;
+  color: #fff;
+  text-align: center;
+}
+
+.player-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.player-team {
+  font-size: 1rem;
+}
+
+.player-country {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-eliminar {
+  padding: 5px 10px;
+  background: #dc3545;
+  color: white;
   border: none;
-  border-radius: 0;
-  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-eliminar:hover {
+  background-color: #b02a37;
 }
 
 
-  .card-content {
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
-    text-align: center;
-    color: white;
-    z-index: 2;
-  }
-
-  .player-name {
-    font-weight: bold;
-    font-size: 14px;
-    margin: 5px 0 2px;
-  }
-
-  .player-team,
-  .player-country {
-    font-size: 12px;
-    margin: 1px 0;
-  }
-
-  .btn-eliminar {
-    margin-top: 5px;
-    background-color: #ff4d4d;
-    border: none;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .btn-eliminar:hover {
-    background-color: #cc0000;
-  }
 
     .carrusel {
     width: 100%;
@@ -1378,31 +1434,59 @@ button[type="submit"]:hover {
 
 
 
-<section id="jugadores" class="seccion-oculta">
-  <h2>Agregar Jugador</h2>
-  <form id="form-jugador" enctype="multipart/form-data">
-    <label>Nombre:</label>
-    <input type="text" name="nombre" required>
+<section id="jugadores" class="seccion-oculta" style="
+  position: relative;
+  background-image: url('/static/madrid.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 4rem 1rem;
+  border-radius: 1rem;
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+">
+  <div style="
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 0;
+    border-radius: 1rem;
+  "></div>
 
-    <label>Equipo:</label>
-    <input type="text" name="equipo" required>
+  <div style="position: relative; z-index: 1; color: #fff;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.8);">👤 Agregar Jugador</h2>
 
-    <label>Nacionalidad:</label>
-    <input type="text" name="nacionalidad" required>
+    <form id="form-jugador" enctype="multipart/form-data" style="
+      max-width: 500px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 1rem;
+      backdrop-filter: blur(6px);
+    ">
+      <input type="text" name="nombre" placeholder="Nombre del jugador" required>
+      <input type="text" name="equipo" placeholder="Equipo" required>
+      <input type="text" name="nacionalidad" placeholder="Nacionalidad" required>
 
-    <label>Foto:</label>
-    <input type="file" name="foto" accept="image/*" required>
+      <label for="foto" class="custom-file-upload">📸 Subir Foto del Jugador</label>
+      <input id="foto" type="file" name="foto" accept="image/*" required style="display: none;">
 
-    <button type="submit">Guardar Jugador</button>
+      <button type="submit">✅ Guardar Jugador</button>
+    </form>
 
-  </form>
-<button id="btn-cargar-jugadores" type="button" style="margin-top: 20px;">
-  Mostrar mis jugadores
-</button>
+    <button id="btn-cargar-jugadores" type="button" style="margin-top: 2rem;">📂 Mostrar Jugadores</button>
 
-  <div id="jugadores-lista" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
+    <div id="jugadores-lista" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 30px;"></div>
+  </div>
 
   <script>
+    document.querySelector(".custom-file-upload").addEventListener("click", () => {
+      document.getElementById("foto").click();
+    });
+
     document.getElementById("form-jugador").addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -1422,51 +1506,53 @@ button[type="submit"]:hover {
       e.target.reset();
     });
 
-function mostrarJugador(jugador) {
-  const contenedor = document.getElementById("jugadores-lista");
+    function mostrarJugador(jugador) {
+      const contenedor = document.getElementById("jugadores-lista");
 
-  const carta = document.createElement("div");
-  carta.className = "fifa-card";
+      const carta = document.createElement("div");
+      carta.className = "fifa-card";
 
-  carta.innerHTML = `
-    <div class="card-wrapper">
-      <img src="/static/carta-fifa.png" class="card-bg" alt="Fondo carta">
-      <img src="${jugador.imagen_url}" class="player-img" alt="Jugador">
-      <div class="card-content">
-        <h4 class="player-name">${jugador.nombre}</h4>
-        <p class="player-team">${jugador.equipo}</p>
-        <p class="player-country">🌍 ${jugador.nacionalidad}</p>
-        <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
-      </div>
+     carta.innerHTML = `
+  <div class="card-wrapper">
+    <img src="/static/carta-fifa.png" class="card-bg" alt="Fondo carta">
+    <img src="${jugador.imagen_url}" class="player-img" alt="Jugador">
+    <div class="card-content">
+      <h4 class="player-name">${jugador.nombre}</h4>
+      <p class="player-team">${jugador.equipo}</p>
+      <p class="player-country">🌍 ${jugador.nacionalidad}</p>
+      <button class="btn-eliminar" data-id="${jugador.id}">Eliminar</button>
     </div>
-  `;
-
-  carta.querySelector(".btn-eliminar").addEventListener("click", async () => {
-    if (!confirm(`¿Eliminar a ${jugador.nombre}?`)) return;
-    const res = await fetch(`/jugadores/${jugador.id}`, { method: "DELETE" });
-    if (res.ok) carta.remove();
-    else alert("❌ No se pudo eliminar el jugador");
-  });
-
-  contenedor.appendChild(carta);
-}
+  </div>
+`;
 
 
- document.getElementById("btn-cargar-jugadores").addEventListener("click", async () => {
-    const res = await fetch("/jugadores/");
-    if (!res.ok) {
-      alert("❌ Error al cargar los jugadores");
-      return;
+      carta.querySelector(".btn-eliminar").addEventListener("click", async () => {
+        if (!confirm(`¿Eliminar a ${jugador.nombre}?`)) return;
+        const res = await fetch(`/jugadores/${jugador.id}`, { method: "DELETE" });
+        if (res.ok) carta.remove();
+        else alert("❌ No se pudo eliminar el jugador");
+      });
+
+      contenedor.appendChild(carta);
     }
 
-    const jugadores = await res.json();
-    const contenedor = document.getElementById("jugadores-lista");
-    contenedor.innerHTML = ""; // Limpiar antes de mostrar
+    document.getElementById("btn-cargar-jugadores").addEventListener("click", async () => {
+      const res = await fetch("/jugadores/");
+      if (!res.ok) {
+        alert("❌ Error al cargar los jugadores");
+        return;
+      }
 
-    jugadores.forEach(mostrarJugador);
-  });
+      const jugadores = await res.json();
+      const contenedor = document.getElementById("jugadores-lista");
+      contenedor.innerHTML = "";
+
+      jugadores.forEach(mostrarJugador);
+    });
   </script>
 </section>
+
+
 
 <section id="info-proyecto" class="seccion-oculta" style="padding: 20px;">
   <h2 style="text-align:center; margin-bottom: 20px;">Información del Proyecto</h2>
